@@ -1,6 +1,6 @@
 {
     "version": "0.2.0",
-    "projectName": "STM32F429I",
+    "projectName": "STM32F429",
     "configurations": [
         {
             "name": "STlink launch",
@@ -9,10 +9,10 @@
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "stutil",
-            "device": "STM32F429I",
+            "device": "STM32F429",
             "interface": "swd",
             // "preLaunchCommands": ["Build all"], // you can execute command instead of task
-            "svdFile": "", // Include svd to watch device peripherals
+            "svdFile": "${workspaceRoot}/STM32F429.svd", // Include svd to watch device peripherals
             "swoConfig": {} // currently (v1.7.0) not supported
         },
         {
@@ -22,10 +22,10 @@
             "request": "attach",
             "type": "cortex-debug",
             "servertype": "stutil",
-            "device": "STM32F429I",
+            "device": "STM32F429",
             "interface": "swd",
             // "preLaunchCommands": ["Build all"], // you can execute command instead of task
-            //"svdFile": "", // Include svd to watch device peripherals
+            "svdFile": "${workspaceRoot}/STM32F429.svd", // Include svd to watch device peripherals
             "swoConfig": {} // currently (v1.7.0) not supported
         },
     ]

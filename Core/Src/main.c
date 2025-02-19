@@ -31,6 +31,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "app_main.h"
+
 
 /* USER CODE END Includes */
 
@@ -113,8 +115,8 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-    HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-    HAL_Delay(100);
+
+    app_main();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

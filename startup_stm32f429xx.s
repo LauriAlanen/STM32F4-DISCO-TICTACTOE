@@ -32,6 +32,9 @@
 .global  g_pfnVectors
 .global  Default_Handler
 
+.extern OS_CPU_PendSVHandler
+.extern OS_CPU_SysTickHandler
+
 /* start address for the initialization values of the .data section. 
 defined in linker script */
 .word  _sidata
@@ -267,10 +270,10 @@ g_pfnVectors:
    .thumb_set DebugMon_Handler,Default_Handler
 
    .weak      PendSV_Handler
-   .thumb_set PendSV_Handler,Default_Handler
+   .thumb_set PendSV_Handler,OS_CPU_PendSVHandler
 
    .weak      SysTick_Handler
-   .thumb_set SysTick_Handler,Default_Handler              
+   .thumb_set SysTick_Handler,OS_CPU_SysTickHandler              
   
    .weak      WWDG_IRQHandler                   
    .thumb_set WWDG_IRQHandler,Default_Handler      

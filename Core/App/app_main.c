@@ -54,7 +54,8 @@ static void App_TaskStart(void *p_arg)
 
     p_arg = p_arg;
 
-    OS_CPU_SysTickInit(0x11940);
+    uint32_t systick_freq = HAL_RCC_GetHCLKFreq();
+    OS_CPU_SysTickInit(systick_freq / OS_CFG_TICK_RATE_HZ); 
 
     OSTaskCreate((OS_TCB *)&App_TaskBlink1TCB,
                 (CPU_CHAR *)"App Task Blink 1",
@@ -115,7 +116,7 @@ static void App_TaskBlink2(void *p_arg)
 
     while (DEF_ON)
     {
-        HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_6);
+        HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_7);
         OSTimeDlyHMSM(0u, 0u, 0u, 500u,
             OS_OPT_TIME_HMSM_STRICT,
             &err);

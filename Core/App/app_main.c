@@ -1,5 +1,7 @@
 #include "os.h"
 #include "main.h"
+#include "stm32f429i_discovery.h"
+#include "stm32f429i_discovery_lcd.h"
 
 #define TASK_STK_SIZE 256
 
@@ -24,6 +26,7 @@ int main()
     OS_ERR err;
 
     Device_Init();
+    BSP_LCD_Init();
 
     OSInit(&err);
 
@@ -102,7 +105,7 @@ static void App_TaskBlink1(void *p_arg)
     while (DEF_ON)
     {
         HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-        OSTimeDlyHMSM(0u, 0u, 0u, 500u,
+        OSTimeDlyHMSM(0u, 1u, 0u, 0U,
             OS_OPT_TIME_HMSM_STRICT,
             &err);
     }
@@ -116,8 +119,8 @@ static void App_TaskBlink2(void *p_arg)
 
     while (DEF_ON)
     {
-        HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_7);
-        OSTimeDlyHMSM(0u, 0u, 0u, 500u,
+        HAL_GPIO_TogglePin(LD4_GPIO_Port, LD4_Pin);
+        OSTimeDlyHMSM(0u, 1u, 0u, 0U,
             OS_OPT_TIME_HMSM_STRICT,
             &err);
     }

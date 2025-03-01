@@ -105,7 +105,7 @@ static void App_TaskBlink1(void *p_arg)
     while (DEF_ON)
     {
         HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-        OSTimeDlyHMSM(0u, 1u, 0u, 0U,
+        OSTimeDlyHMSM(0u, 0u, 0u, 500u,
             OS_OPT_TIME_HMSM_STRICT,
             &err);
     }
@@ -120,7 +120,7 @@ static void App_TaskBlink2(void *p_arg)
     while (DEF_ON)
     {
         HAL_GPIO_TogglePin(LD4_GPIO_Port, LD4_Pin);
-        OSTimeDlyHMSM(0u, 1u, 0u, 0U,
+        OSTimeDlyHMSM(0u, 0u, 0u, 500u,
             OS_OPT_TIME_HMSM_STRICT,
             &err);
     }

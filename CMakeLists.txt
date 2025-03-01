@@ -41,6 +41,7 @@ add_executable(${CMAKE_PROJECT_NAME})
 add_subdirectory(cmake/stm32cubemx)
 add_subdirectory(Core/uC-OS3)
 add_subdirectory(Core/Bsp)
+add_subdirectory(Core/Components)
 
 # Link directories setup
 target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
@@ -67,6 +68,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     stm32cubemx
     uC-OS3  
     stm32-bsp
+    components
     # Add user defined libraries
 )
 

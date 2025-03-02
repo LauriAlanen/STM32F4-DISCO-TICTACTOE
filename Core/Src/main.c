@@ -1,184 +1,192 @@
-/* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2025 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
-/* USER CODE END Header */
-/* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "crc.h"
-#include "dma2d.h"
-#include "i2c.h"
-#include "ltdc.h"
-#include "spi.h"
-#include "tim.h"
-#include "usart.h"
-#include "usb_otg.h"
-#include "gpio.h"
-#include "fmc.h"
+#include "os.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
+#define TASK_STK_SIZE 256
 
-/* USER CODE END Includes */
+#define START_TASK_PRIORITY 10
+static OS_TCB App_TaskStartTCB;
+static CPU_STK App_TaskStartStk[TASK_STK_SIZE];
 
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
+#define BLINK_TASK_PRIORITY_1 11
+static OS_TCB App_TaskBlink1TCB;
+static CPU_STK App_TaskBlink1Stk[TASK_STK_SIZE];
 
-/* USER CODE END PTD */
+#define BLINK_TASK_PRIORITY_2 12
+static OS_TCB App_TaskBlink2TCB;
+static CPU_STK App_TaskBlink2Stk[TASK_STK_SIZE];
 
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
+static void App_TaskStart(void *p_arg);
+static void App_TaskBlink1(void *p_arg);
+static void App_TaskBlink2(void *p_arg);
 
-/* USER CODE END PD */
+static void SystemClock_Config(void);
 
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
-/* USER CODE BEGIN PFP */
-void Device_Init(void);
-
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-void Device_Init(void)
+int main()
 {
-  HAL_Init();
+    OS_ERR err;
+    
+    HAL_Init();
+    SystemClock_Config();
+    BSP_LED_Init(LED3);
+    BSP_LED_Init(LED4);
+    BSP_LED_On(LED3);
+    BSP_LCD_Init();
+    BSP_LCD_LayerDefaultInit(LCD_BACKGROUND_LAYER, LCD_FRAME_BUFFER);
+    BSP_LCD_LayerDefaultInit(LCD_FOREGROUND_LAYER, LCD_FRAME_BUFFER);
+    BSP_LCD_SelectLayer(LCD_FOREGROUND_LAYER);
+    BSP_LCD_DisplayOn();
+    BSP_LCD_Clear(LCD_COLOR_WHITE);
+    BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 
-  SystemClock_Config();
+    OSInit(&err);
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_CRC_Init();
-  MX_DMA2D_Init();
-  MX_FMC_Init();
-  MX_I2C3_Init();
-  MX_LTDC_Init();
-  MX_SPI5_Init();
-  MX_TIM1_Init();
-  MX_USART1_UART_Init();
-  MX_USB_OTG_HS_HCD_Init();
+    OSTaskCreate((OS_TCB *)&App_TaskStartTCB,
+                (CPU_CHAR *)"App Task Start",
+                (OS_TASK_PTR) App_TaskStart,
+                (void *) 0,
+                (OS_PRIO) START_TASK_PRIORITY,
+                (CPU_STK *)&App_TaskStartStk[0],
+                (CPU_STK_SIZE)(TASK_STK_SIZE / 10u),
+                (CPU_STK_SIZE) TASK_STK_SIZE,
+                (OS_MSG_QTY) 0,
+                (OS_TICK) 0,
+                (void *) 0,
+                (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+                (OS_ERR *)&err);
+
+    OSStart(&err);  
+    
+    while (DEF_ON){}
+    
+    return 0;
+}   
+
+static void App_TaskStart(void *p_arg)
+{   
+    OS_ERR err;
+
+    p_arg = p_arg;
+
+    uint32_t systick_freq = HAL_RCC_GetHCLKFreq();
+    OS_CPU_SysTickInit(systick_freq / OS_CFG_TICK_RATE_HZ); 
+
+    OSTaskCreate((OS_TCB *)&App_TaskBlink1TCB,
+                (CPU_CHAR *)"App Task Blink 1",
+                (OS_TASK_PTR) App_TaskBlink1,
+                (void *) 0,
+                (OS_PRIO) BLINK_TASK_PRIORITY_1,
+                (CPU_STK *)&App_TaskBlink1Stk[0],
+                (CPU_STK_SIZE)(TASK_STK_SIZE / 10u),
+                (CPU_STK_SIZE) TASK_STK_SIZE,
+                (OS_MSG_QTY) 0,
+                (OS_TICK) 0,
+                (void *) 0,
+                (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+                (OS_ERR *)&err);
+    
+    OSTaskCreate((OS_TCB *)&App_TaskBlink2TCB,
+                (CPU_CHAR *)"App Task Blink 2",
+                (OS_TASK_PTR) App_TaskBlink2,
+                (void *) 0,
+                (OS_PRIO) BLINK_TASK_PRIORITY_2,
+                (CPU_STK *)&App_TaskBlink2Stk[0],
+                (CPU_STK_SIZE)(TASK_STK_SIZE / 10u),
+                (CPU_STK_SIZE) TASK_STK_SIZE,
+                (OS_MSG_QTY) 0,
+                (OS_TICK) 0,
+                (void *) 0,
+                (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+                (OS_ERR *)&err);
+
+    while (DEF_ON)
+    {
+        OSTimeDlyHMSM(0u, 0u, 0u, 500u,
+            OS_OPT_TIME_HMSM_STRICT,
+            &err);
+    }
 }
 
-/* USER CODE END 0 */
-
-void SystemClock_Config(void)
+static void App_TaskBlink1(void *p_arg)
 {
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    OS_ERR err;
 
-  /** Configure the main internal regulator output voltage
-  */
-  __HAL_RCC_PWR_CLK_ENABLE();
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
+    p_arg = p_arg;
 
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 4;
-  RCC_OscInitStruct.PLL.PLLN = 72;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 3;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
-  {
-    Error_Handler();
-  }
+    while (DEF_ON)
+    {
+        HAL_GPIO_TogglePin(LED3_GPIO_PORT, LED3_PIN);
+        OSTimeDlyHMSM(0u, 0u, 1u, 0u,
+            OS_OPT_TIME_HMSM_STRICT,
+            &err);
+    }
 }
 
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
-
-/**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM6 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+static void App_TaskBlink2(void *p_arg)
 {
-  /* USER CODE BEGIN Callback 0 */
+    OS_ERR err;
 
-  /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM6) {
-    HAL_IncTick();
-  }
-  /* USER CODE BEGIN Callback 1 */
+    p_arg = p_arg;
 
-  /* USER CODE END Callback 1 */
+    BSP_LCD_DrawCircle(19, 50, 50);
+
+    while (DEF_ON)
+    {
+        HAL_GPIO_TogglePin(LED4_GPIO_PORT, LED4_PIN);
+        OSTimeDlyHMSM(0u, 0u, 1u, 0u,
+            OS_OPT_TIME_HMSM_STRICT,
+            &err);
+    }
 }
 
-/**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
-void Error_Handler(void)
+static void SystemClock_Config(void)
 {
-  /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
-  /* USER CODE END Error_Handler_Debug */
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+
+    /** Configure the main internal regulator output voltage
+     */
+    __HAL_RCC_PWR_CLK_ENABLE();
+    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+    /** Initializes the CPU, AHB and APB busses clocks
+     */
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+    RCC_OscInitStruct.PLL.PLLM = 8;
+    RCC_OscInitStruct.PLL.PLLN = 180;
+    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+    RCC_OscInitStruct.PLL.PLLQ = 7;
+    HAL_RCC_OscConfig(&RCC_OscInitStruct);
+
+    /** Activate the Over-Drive mode
+     */
+    HAL_PWREx_EnableOverDrive();
+
+    /** Initializes the CPU, AHB and APB busses clocks
+     */
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+
+    HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
+
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_LTDC;
+    PeriphClkInitStruct.PLLSAI.PLLSAIN = 216;
+    PeriphClkInitStruct.PLLSAI.PLLSAIR = 2;
+    PeriphClkInitStruct.PLLSAIDivR = RCC_PLLSAIDIVR_2;
+    HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
 }
 
-#ifdef  USE_FULL_ASSERT
-/**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
-void assert_failed(uint8_t *file, uint32_t line)
+void HAL_Delay(uint32_t delay)
 {
-  /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+    OS_ERR err;
+
+    OSTimeDly((OS_TICK)delay,
+              (OS_OPT)OS_OPT_TIME_DLY,
+              (OS_ERR *)&err);
 }
-#endif /* USE_FULL_ASSERT */

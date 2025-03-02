@@ -1,6 +1,12 @@
 {
     "files.associations": {
         "main.h": "c",
-        "os.h": "c"
+        "os.h": "c",
+        "ili9341.h": "c",
+        "stm32f429i_discovery.h": "c",
+        "stm32f429i_discovery_lcd.h": "c",
+        "st_logo2.h": "c",
+        "lcd.h": "c",
+        "app_lcd.h": "c"
     }
 }

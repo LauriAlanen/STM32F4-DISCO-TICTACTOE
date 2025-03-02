@@ -50,12 +50,16 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    ${CMAKE_SOURCE_DIR}/Core/App/app_main.c
+    ${CMAKE_SOURCE_DIR}/Core/Src/main.c
+    ${CMAKE_SOURCE_DIR}/Core/Src/app_lcd.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    ${CMAKE_SOURCE_DIR}/Core/App
+    ${CMAKE_SOURCE_DIR}/Core/Inc
+    ${CMAKE_SOURCE_DIR}/Core/uC-OS3/CPU
+    ${CMAKE_SOURCE_DIR}/Core/uC-OS3/Ports/ARM-Cortex-M/ARMv7-M
+    ${CMAKE_SOURCE_DIR}/Core/uC-OS3/Source
 )
 
 # Add project symbols (macros)
@@ -65,8 +69,8 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add linked libraries
 target_link_libraries(${CMAKE_PROJECT_NAME}
-    stm32cubemx
     uC-OS3  
+    stm32cubemx
     stm32-bsp
     components
     # Add user defined libraries

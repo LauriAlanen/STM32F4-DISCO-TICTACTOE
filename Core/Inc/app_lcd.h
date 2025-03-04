@@ -4,6 +4,10 @@
 #include "stm32f429i_discovery_lcd.h"
 #include "stm32f429i_discovery_ts.h"
 
+#define COLS 3
+#define ROWS 3
+
 uint8_t APP_LCD_Initialize();
+void APP_Draw_Board();
 
 #endif

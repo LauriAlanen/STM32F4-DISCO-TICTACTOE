@@ -11,13 +11,8 @@ static CPU_STK App_TaskStartStk[TASK_STK_SIZE];
 static OS_TCB App_TaskBlink1TCB;
 static CPU_STK App_TaskBlink1Stk[TASK_STK_SIZE];
 
-#define BLINK_TASK_PRIORITY_2 12
-static OS_TCB App_TaskBlink2TCB;
-static CPU_STK App_TaskBlink2Stk[TASK_STK_SIZE];
-
 static void App_TaskStart(void *p_arg);
 static void App_TaskBlink1(void *p_arg);
-static void App_TaskBlink2(void *p_arg);
 
 static void SystemClock_Config(void);
 
@@ -27,16 +22,11 @@ int main()
     
     HAL_Init();
     SystemClock_Config();
+
     BSP_LED_Init(LED3);
-    BSP_LED_Init(LED4);
-    BSP_LED_On(LED3);
-    BSP_LCD_Init();
-    BSP_LCD_LayerDefaultInit(LCD_BACKGROUND_LAYER, LCD_FRAME_BUFFER);
-    BSP_LCD_LayerDefaultInit(LCD_FOREGROUND_LAYER, LCD_FRAME_BUFFER);
-    BSP_LCD_SelectLayer(LCD_FOREGROUND_LAYER);
-    BSP_LCD_DisplayOn();
-    BSP_LCD_Clear(LCD_COLOR_WHITE);
-    BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+
+    APP_LCD_Initialize();
+    APP_Draw_Board();
 
     OSInit(&err);
 
@@ -84,20 +74,6 @@ static void App_TaskStart(void *p_arg)
                 (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                 (OS_ERR *)&err);
     
-    OSTaskCreate((OS_TCB *)&App_TaskBlink2TCB,
-                (CPU_CHAR *)"App Task Blink 2",
-                (OS_TASK_PTR) App_TaskBlink2,
-                (void *) 0,
-                (OS_PRIO) BLINK_TASK_PRIORITY_2,
-                (CPU_STK *)&App_TaskBlink2Stk[0],
-                (CPU_STK_SIZE)(TASK_STK_SIZE / 10u),
-                (CPU_STK_SIZE) TASK_STK_SIZE,
-                (OS_MSG_QTY) 0,
-                (OS_TICK) 0,
-                (void *) 0,
-                (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-                (OS_ERR *)&err);
-
     while (DEF_ON)
     {
         OSTimeDlyHMSM(0u, 0u, 0u, 500u,
@@ -115,23 +91,6 @@ static void App_TaskBlink1(void *p_arg)
     while (DEF_ON)
     {
         HAL_GPIO_TogglePin(LED3_GPIO_PORT, LED3_PIN);
-        OSTimeDlyHMSM(0u, 0u, 1u, 0u,
-            OS_OPT_TIME_HMSM_STRICT,
-            &err);
-    }
-}
-
-static void App_TaskBlink2(void *p_arg)
-{
-    OS_ERR err;
-
-    p_arg = p_arg;
-
-    BSP_LCD_DrawCircle(19, 50, 50);
-
-    while (DEF_ON)
-    {
-        HAL_GPIO_TogglePin(LED4_GPIO_PORT, LED4_PIN);
         OSTimeDlyHMSM(0u, 0u, 1u, 0u,
             OS_OPT_TIME_HMSM_STRICT,
             &err);

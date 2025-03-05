@@ -46,6 +46,7 @@ void APP_TS_Get_Cell(void *p_arg)
     uint16_t y = BSP_LCD_GetYSize(); // 320
     uint16_t x_spacing = x / COLS;
     uint16_t y_spacing = y / ROWS;
+
     
     TS_StateTypeDef TS_state;
 
@@ -56,5 +57,6 @@ void APP_TS_Get_Cell(void *p_arg)
     if (TS_state.TouchDetected)
     {
         BSP_LED_Toggle(LED3);
+        BSP_LCD_DrawCircle((TS_state.X / x_spacing) * x_spacing , (TS_state.Y / y_spacing) * y_spacing, 40);
     }
 }

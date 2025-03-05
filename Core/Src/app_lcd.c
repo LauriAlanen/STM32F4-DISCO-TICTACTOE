@@ -10,6 +10,8 @@ uint8_t APP_LCD_Initialize()
     BSP_LCD_Clear(LCD_COLOR_BLACK);
     BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
 
+    BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
+
     return 0;
 }
 
@@ -34,5 +36,25 @@ void APP_Draw_Board()
     {
         draw_pos = i * y_spacing;
         BSP_LCD_DrawLine(0, draw_pos, x, draw_pos);
+    }
+}
+
+// This function should be made to provide a interrupt to the kernel
+void APP_TS_Get_Cell(void *p_arg)
+{
+    uint16_t x = BSP_LCD_GetXSize(); // 240 + SPACING
+    uint16_t y = BSP_LCD_GetYSize(); // 320
+    uint16_t x_spacing = x / COLS;
+    uint16_t y_spacing = y / ROWS;
+    
+    TS_StateTypeDef TS_state;
+
+    p_arg = p_arg;
+
+    BSP_TS_GetState(&TS_state);
+
+    if (TS_state.TouchDetected)
+    {
+        BSP_LED_Toggle(LED3);
     }
 }

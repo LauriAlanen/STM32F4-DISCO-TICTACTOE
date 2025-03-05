@@ -9,5 +9,6 @@
 
 uint8_t APP_LCD_Initialize();
 void APP_Draw_Board();
+void APP_TS_Get_Cell();
 
 #endif

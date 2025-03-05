@@ -8,6 +8,9 @@
         "st_logo2.h": "c",
         "lcd.h": "c",
         "app_lcd.h": "c",
-        "stm32f429i_discovery_ts.h": "c"
+        "stm32f429i_discovery_ts.h": "c",
+        "stm32f4xx_hal.h": "c",
+        "stm32f4xx_hal_conf.h": "c",
+        "utils.h": "c"
     }
 }

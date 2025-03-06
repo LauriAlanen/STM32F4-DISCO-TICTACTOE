@@ -4,8 +4,7 @@
 #include "stm32f429i_discovery_lcd.h"
 #include "stm32f429i_discovery_ts.h"
 
-#define COLS 3
-#define ROWS 3
+#define BOARD_SIZE 5
 
 #define ICON_PADDING 10
 

@@ -30,6 +30,7 @@ int main()
     }
 
     APP_Draw_Board();
+    APP_Draw_Circle(0, 0);
     APP_Draw_Circle(1, 1);
     APP_Draw_Circle(2, 2);
 

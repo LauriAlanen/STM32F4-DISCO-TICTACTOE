@@ -27,8 +27,8 @@ uint8_t APP_LCD_Initialize()
 
     x_size = BSP_LCD_GetXSize(); // 240
     y_size = BSP_LCD_GetYSize(); // 320
-    x_spacing = x_size / COLS;
-    y_spacing = y_size / ROWS;
+    x_spacing = x_size / BOARD_SIZE;
+    y_spacing = y_size / BOARD_SIZE;
 
     // Calculate the size for drawable icons
 
@@ -42,13 +42,13 @@ void APP_Draw_Board()
 
     uint16_t draw_pos = 0;
     
-    for (uint8_t i = 1; i < COLS; i++)
+    for (uint8_t i = 1; i < BOARD_SIZE; i++)
     {
         draw_pos = i * x_spacing;
         BSP_LCD_DrawLine(draw_pos, 0, draw_pos, y_size);
     }
     
-    for (uint8_t i = 1; i < ROWS; i++)
+    for (uint8_t i = 1; i < BOARD_SIZE; i++)
     {
         draw_pos = i * y_spacing;
         BSP_LCD_DrawLine(0, draw_pos, x_size, draw_pos);
@@ -60,8 +60,8 @@ void APP_TS_Get_Cell(void *p_arg)
 {
     uint16_t x = BSP_LCD_GetXSize(); // 240 + SPACING
     uint16_t y = BSP_LCD_GetYSize(); // 320
-    uint16_t x_spacing = x / COLS;
-    uint16_t y_spacing = y / ROWS;
+    uint16_t x_spacing = x / BOARD_SIZE;
+    uint16_t y_spacing = y / BOARD_SIZE;
 
     
     TS_StateTypeDef TS_state;
@@ -76,23 +76,18 @@ void APP_TS_Get_Cell(void *p_arg)
         BSP_LCD_DrawCircle((TS_state.X / x_spacing) * x_spacing , (TS_state.Y / y_spacing) * y_spacing, 40);
     }
 }
+
 uint8_t APP_Draw_Circle(uint8_t column, uint8_t row)
 {
-    uint16_t x_icon_size, y_icon_size = 0, y_padding = 0, x_padding = 0;
-
-    if (column > COLS || row > ROWS)
+    if (column > BOARD_SIZE || row > BOARD_SIZE)
     {
         return 1;
     }
 
-    x_icon_size = x_spacing - ICON_PADDING; 
-    y_icon_size = y_spacing - ICON_PADDING; 
-    y_padding = (y_spacing - y_icon_size) / 2;
-    x_padding = (x_spacing - x_icon_size) / 2;
-    
-    uint16_t radii = x_icon_size / 2;
-    uint16_t x_draw_pos = row * x_spacing + x_padding;
-    uint16_t y_draw_pos = column * y_spacing + y_padding;
+
+    uint16_t radii = (x_spacing - ICON_PADDING) / 2;
+    uint16_t x_draw_pos = (row * x_spacing) + x_spacing / 2;
+    uint16_t y_draw_pos = (column * y_spacing) + y_spacing / 2;
     
     BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
     BSP_LCD_DrawCircle(x_draw_pos, y_draw_pos, radii);

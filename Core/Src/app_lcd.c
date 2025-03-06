@@ -55,6 +55,27 @@ void APP_Draw_Board()
     }
 }
 
+// This function should be made to provide a interrupt to the kernel
+void APP_TS_Get_Cell(void *p_arg)
+{
+    uint16_t x = BSP_LCD_GetXSize(); // 240 + SPACING
+    uint16_t y = BSP_LCD_GetYSize(); // 320
+    uint16_t x_spacing = x / COLS;
+    uint16_t y_spacing = y / ROWS;
+
+    
+    TS_StateTypeDef TS_state;
+
+    p_arg = p_arg;
+
+    BSP_TS_GetState(&TS_state);
+
+    if (TS_state.TouchDetected)
+    {
+        BSP_LED_Toggle(LED3);
+        BSP_LCD_DrawCircle((TS_state.X / x_spacing) * x_spacing , (TS_state.Y / y_spacing) * y_spacing, 40);
+    }
+}
 uint8_t APP_Draw_Circle(uint8_t column, uint8_t row)
 {
     uint16_t x_icon_size, y_icon_size = 0, y_padding = 0, x_padding = 0;

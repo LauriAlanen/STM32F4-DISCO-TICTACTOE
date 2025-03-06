@@ -11,6 +11,7 @@
 
 uint8_t APP_LCD_Initialize();
 void APP_Draw_Board();
+void APP_TS_Get_Cell();
 uint8_t APP_Draw_Cross(uint8_t column, uint8_t row);
 uint8_t APP_Draw_Circle(uint8_t column, uint8_t row);
 

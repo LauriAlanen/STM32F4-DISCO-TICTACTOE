@@ -4,7 +4,7 @@
 #include "stm32f429i_discovery_lcd.h"
 #include "stm32f429i_discovery_ts.h"
 
-#define BOARD_SIZE 5
+#define BOARD_SIZE 3
 
 #define ICON_PADDING 10
 
@@ -13,5 +13,6 @@ void APP_Draw_Board();
 void APP_TS_Get_Cell();
 uint8_t APP_Draw_Cross(uint8_t column, uint8_t row);
 uint8_t APP_Draw_Circle(uint8_t column, uint8_t row);
+void APP_Draw_Text(uint16_t Line, uint8_t *ptr);
 
 #endif

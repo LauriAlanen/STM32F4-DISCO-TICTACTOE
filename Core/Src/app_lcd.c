@@ -1,4 +1,5 @@
 #include "app_lcd.h"
+#include <stdio.h>
 
 static uint16_t x_size, y_size, x_spacing, y_spacing; // Screen size, and grid spacing (only read)
 
@@ -30,17 +31,14 @@ uint8_t APP_LCD_Initialize()
     x_spacing = x_size / BOARD_SIZE;
     y_spacing = y_size / BOARD_SIZE;
 
-    // Calculate the size for drawable icons
-
-
     return 0;
 }
 
 void APP_Draw_Board()
 {
-    BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
-
     uint16_t draw_pos = 0;
+    
+    BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
     
     for (uint8_t i = 1; i < BOARD_SIZE; i++)
     {
@@ -56,15 +54,13 @@ void APP_Draw_Board()
 }
 
 // This function should be made to provide a interrupt to the kernel
+// For some odd reason the TS coordinates are not the same as screen coordinates
+// In TS top left corner is (0, 320)
 void APP_TS_Get_Cell(void *p_arg)
-{
-    uint16_t x = BSP_LCD_GetXSize(); // 240 + SPACING
-    uint16_t y = BSP_LCD_GetYSize(); // 320
-    uint16_t x_spacing = x / BOARD_SIZE;
-    uint16_t y_spacing = y / BOARD_SIZE;
-
-    
+{  
     TS_StateTypeDef TS_state;
+    uint8_t column = 0, row = 0;
+    uint8_t buffer[20];
 
     p_arg = p_arg;
 
@@ -72,8 +68,14 @@ void APP_TS_Get_Cell(void *p_arg)
 
     if (TS_state.TouchDetected)
     {
+        column = TS_state.X / x_spacing;
+        row = TS_state.Y / y_spacing;
+        APP_Draw_Circle(column, row);
+        snprintf(buffer, 4, "%d", TS_state.X);
+        APP_Draw_Text(1, buffer);
+        snprintf(buffer, 4, "%d", TS_state.Y);
+        APP_Draw_Text(2, buffer);
         BSP_LED_Toggle(LED3);
-        BSP_LCD_DrawCircle((TS_state.X / x_spacing) * x_spacing , (TS_state.Y / y_spacing) * y_spacing, 40);
     }
 }
 
@@ -84,7 +86,6 @@ uint8_t APP_Draw_Circle(uint8_t column, uint8_t row)
         return 1;
     }
 
-
     uint16_t radii = (x_spacing - ICON_PADDING) / 2;
     uint16_t x_draw_pos = (row * x_spacing) + x_spacing / 2;
     uint16_t y_draw_pos = (column * y_spacing) + y_spacing / 2;
@@ -93,4 +94,13 @@ uint8_t APP_Draw_Circle(uint8_t column, uint8_t row)
     BSP_LCD_DrawCircle(x_draw_pos, y_draw_pos, radii);
     
     return 0;
+}
+
+void APP_Draw_Text(uint16_t Line, uint8_t *ptr)
+{
+    uint32_t color = BSP_LCD_GetTextColor();
+    
+    BSP_LCD_SetTextColor(LCD_COLOR_BLACK); 
+    BSP_LCD_DisplayStringAtLine(Line, ptr);
+    BSP_LCD_SetTextColor(color);
 }

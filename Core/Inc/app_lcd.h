@@ -7,7 +7,11 @@
 #define COLS 3
 #define ROWS 3
 
+#define ICON_PADDING 10
+
 uint8_t APP_LCD_Initialize();
 void APP_Draw_Board();
+uint8_t APP_Draw_Cross(uint8_t column, uint8_t row);
+uint8_t APP_Draw_Circle(uint8_t column, uint8_t row);
 
 #endif

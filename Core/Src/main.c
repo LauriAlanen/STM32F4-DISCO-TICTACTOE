@@ -18,17 +18,25 @@ static void SystemClock_Config(void);
 
 int main()
 {
-    OS_ERR err;
-    
+    OS_ERR os_error;
+    uint8_t app_error = 0;
+
     HAL_Init();
     SystemClock_Config();
 
     BSP_LED_Init(LED3);
 
-    APP_LCD_Initialize();
-    APP_Draw_Board();
+    app_error = APP_LCD_Initialize();
+    if (app_error)
+    {
+        return 1;
+    }
 
-    OSInit(&err);
+    APP_Draw_Board();
+    APP_Draw_Circle(1, 1);
+    APP_Draw_Circle(2, 2);
+
+    OSInit(&os_error);
 
     OSTaskCreate((OS_TCB *)&App_TaskStartTCB,
                 (CPU_CHAR *)"App Task Start",
@@ -42,9 +50,9 @@ int main()
                 (OS_TICK) 0,
                 (void *) 0,
                 (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-                (OS_ERR *)&err);
+                (OS_ERR *)&os_error);
 
-    OSStart(&err);  
+    OSStart(&os_error);  
     
     while (DEF_ON){}
     
@@ -89,7 +97,7 @@ static void App_TaskBlink1(void *p_arg)
     p_arg = p_arg;
 
     while (DEF_ON)
-    {
+    {      
         HAL_GPIO_TogglePin(LED3_GPIO_PORT, LED3_PIN);
         OSTimeDlyHMSM(0u, 0u, 1u, 0u,
             OS_OPT_TIME_HMSM_STRICT,

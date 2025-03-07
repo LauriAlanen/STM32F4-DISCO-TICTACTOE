@@ -13,6 +13,8 @@ static OS_TCB App_TaskGetTouchTCB;
 static CPU_STK App_TaskGetTouchStk[TASK_STK_SIZE];
 static void App_TaskGetTouch(void *p_arg);
 
+OS_FLAG_GRP TSEventFlag;
+
 int main()
 {
     OS_ERR os_error;
@@ -30,8 +32,10 @@ int main()
     }
 
     APP_Draw_Board();
-
+    
     OSInit(&os_error);
+
+    OSFlagCreate(&TSEventFlag, "Touch Screen Flag", (OS_FLAGS)0, &os_error);
 
     OSTaskCreate((OS_TCB *)&App_TaskStartTCB,
                 (CPU_CHAR *)"App Task Start",
@@ -94,7 +98,7 @@ static void App_TaskGetTouch(void *p_arg)
     while (DEF_ON)
     {
         APP_TS_Get_Cell();
-        OSTimeDlyHMSM(0u, 0u, 1u, 0u,
+        OSTimeDlyHMSM(0u, 0u, 0u, 500u,
             OS_OPT_TIME_HMSM_STRICT,
             &err);
     }

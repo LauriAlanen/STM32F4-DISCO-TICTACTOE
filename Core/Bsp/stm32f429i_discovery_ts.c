@@ -117,7 +117,7 @@ uint8_t BSP_TS_ITConfig(void)
 {
   /* Enable the TS ITs */
   TsDrv->EnableIT(TS_I2C_ADDRESS);
-
+  stmpe811_IO_Config(TS_I2C_ADDRESS, 0, IO_MODE_IT_RISING_EDGE);
   return TS_OK;
 }
 

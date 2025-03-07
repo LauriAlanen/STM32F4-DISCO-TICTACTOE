@@ -1,6 +1,6 @@
 #include "app_lcd.h"
 #include <stdio.h>
-#include <string.h>
+#include "os.h"
 
 static uint16_t x_size, y_size, x_spacing, y_spacing; // Screen size, and grid spacing (only read)
 
@@ -13,20 +13,26 @@ uint8_t APP_LCD_Initialize()
     {
         return 1;
     }
-
+    
     BSP_LCD_LayerDefaultInit(LCD_BACKGROUND_LAYER, LCD_FRAME_BUFFER);
     BSP_LCD_LayerDefaultInit(LCD_FOREGROUND_LAYER, LCD_FRAME_BUFFER);
     BSP_LCD_SelectLayer(LCD_BACKGROUND_LAYER);
     BSP_LCD_DisplayOn();
     BSP_LCD_Clear(LCD_COLOR_BLACK);
     BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
-
+    
     error = BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
     if (error)
     {
         return 1;
     }
 
+/*     error = BSP_TS_ITConfig();
+    if (error)
+    {
+        return 1;
+    } */
+    
     x_size = BSP_LCD_GetXSize(); // 240
     y_size = BSP_LCD_GetYSize(); // 320
     x_spacing = x_size / BOARD_SIZE;

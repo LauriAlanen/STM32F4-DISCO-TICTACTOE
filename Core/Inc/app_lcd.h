@@ -4,8 +4,7 @@
 #include "stm32f429i_discovery_lcd.h"
 #include "stm32f429i_discovery_ts.h"
 
-#define BOARD_SIZE 8
-
+#define BOARD_SIZE 6
 #define ICON_PADDING 10
 
 uint8_t APP_LCD_Initialize();

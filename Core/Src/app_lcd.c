@@ -1,5 +1,6 @@
 #include "app_lcd.h"
 #include <stdio.h>
+#include <string.h>
 
 static uint16_t x_size, y_size, x_spacing, y_spacing; // Screen size, and grid spacing (only read)
 
@@ -60,21 +61,18 @@ void APP_TS_Get_Cell(void *p_arg)
 {  
     TS_StateTypeDef TS_state;
     uint8_t column = 0, row = 0;
-    uint8_t buffer[20];
 
     p_arg = p_arg;
 
     BSP_TS_GetState(&TS_state);
 
-    if (TS_state.TouchDetected)
+    if (TS_state.TouchDetected && (TS_state.X < x_size && TS_state.Y < y_size))
     {
         column = TS_state.X / x_spacing;
-        row = TS_state.Y / y_spacing;
-        APP_Draw_Circle(column, row);
-        snprintf(buffer, 4, "%d", TS_state.X);
-        APP_Draw_Text(1, buffer);
-        snprintf(buffer, 4, "%d", TS_state.Y);
-        APP_Draw_Text(2, buffer);
+        row = (y_size - TS_state.Y) / y_spacing;
+
+        APP_Draw_Circle(row, column);
+        
         BSP_LED_Toggle(LED3);
     }
 }

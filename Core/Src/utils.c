@@ -1,5 +1,4 @@
 #include "utils.h"
-#include "os.h"
 
 void SystemClock_Config(void)
 {

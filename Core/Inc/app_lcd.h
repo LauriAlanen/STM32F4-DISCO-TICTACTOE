@@ -1,19 +1,20 @@
-#ifndef __APP_LCD_H
-#define __APP_LCD_H
+#ifndef APP_LCD_H
+#define APP_LCD_H
 
 #include "stm32f429i_discovery_lcd.h"
 #include "stm32f429i_discovery_ts.h"
 #include "app_ts.h"
+#include "os.h"
 
-#define BOARD_SIZE 6
+#define BOARD_SIZE 3
 #define ICON_PADDING 10
 
-extern uint16_t x_size, y_size, x_spacing, y_spacing; // Screen size, and grid spacing (only read)
+extern CPU_INT16U x_size, y_size, x_spacing, y_spacing; // Screen size, and grid spacing (only read)
 
-uint8_t APP_LCD_Initialize();
-uint8_t APP_Draw_Cross(uint8_t column, uint8_t row);
-uint8_t APP_Draw_Circle(uint8_t column, uint8_t row);
+CPU_INT08U APP_LCD_Initialize();
+CPU_INT08U APP_Draw_Cross(CPU_INT08U column, CPU_INT08U row);
+CPU_INT08U APP_Draw_Circle(CPU_INT08U column, CPU_INT08U row);
 void APP_Draw_Board();
-void APP_Draw_Text(uint16_t Line, uint8_t *ptr);
+void APP_Draw_Text(CPU_INT16U Line, CPU_INT08U *ptr);
 
 #endif

@@ -1,12 +1,10 @@
 #include "app_lcd.h"
-#include <stdio.h>
-#include "os.h"
 
-uint16_t x_size, y_size, x_spacing, y_spacing;
+CPU_INT16U x_size, y_size, x_spacing, y_spacing;
 
-uint8_t APP_LCD_Initialize()
+CPU_INT08U APP_LCD_Initialize()
 {
-    uint8_t error;
+    CPU_INT08U error;
 
     error = BSP_LCD_Init();
     if (error)
@@ -33,33 +31,33 @@ uint8_t APP_LCD_Initialize()
 
 void APP_Draw_Board()
 {
-    uint16_t draw_pos = 0;
+    CPU_INT16U draw_pos = 0;
     
     BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
     
-    for (uint8_t i = 1; i < BOARD_SIZE; i++)
+    for (CPU_INT08U i = 1; i < BOARD_SIZE; i++)
     {
         draw_pos = i * x_spacing;
         BSP_LCD_DrawLine(draw_pos, 0, draw_pos, y_size);
     }
     
-    for (uint8_t i = 1; i < BOARD_SIZE; i++)
+    for (CPU_INT08U i = 1; i < BOARD_SIZE; i++)
     {
         draw_pos = i * y_spacing;
         BSP_LCD_DrawLine(0, draw_pos, x_size, draw_pos);
     }
 }
 
-uint8_t APP_Draw_Circle(uint8_t column, uint8_t row)
+CPU_INT08U APP_Draw_Circle(CPU_INT08U column, CPU_INT08U row)
 {
     if (column > BOARD_SIZE || row > BOARD_SIZE)
     {
         return 1;
     }
 
-    uint16_t radii = (x_spacing - ICON_PADDING) / 2;
-    uint16_t x_draw_pos = (row * x_spacing) + x_spacing / 2;
-    uint16_t y_draw_pos = (column * y_spacing) + y_spacing / 2;
+    CPU_INT16U radii = (x_spacing - ICON_PADDING) / 2;
+    CPU_INT16U x_draw_pos = (row * x_spacing) + x_spacing / 2;
+    CPU_INT16U y_draw_pos = (column * y_spacing) + y_spacing / 2;
     
     BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
     BSP_LCD_DrawCircle(x_draw_pos, y_draw_pos, radii);
@@ -67,9 +65,9 @@ uint8_t APP_Draw_Circle(uint8_t column, uint8_t row)
     return 0;
 }
 
-void APP_Draw_Text(uint16_t Line, uint8_t *ptr)
+void APP_Draw_Text(CPU_INT16U Line, CPU_INT08U *ptr)
 {
-    uint32_t color = BSP_LCD_GetTextColor();
+    CPU_INT32U color = BSP_LCD_GetTextColor();
     
     BSP_LCD_SetTextColor(LCD_COLOR_BLACK); 
     BSP_LCD_DisplayStringAtLine(Line, ptr);

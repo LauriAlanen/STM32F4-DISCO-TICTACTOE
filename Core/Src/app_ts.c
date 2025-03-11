@@ -1,9 +1,11 @@
 #include "app_ts.h"
-#include "os.h"
 
-uint8_t APP_TS_Init(void)
+OS_SEM TS_Semaphore;
+OS_SEM Draw_Semaphore;
+
+CPU_INT08U APP_TS_Init(void)
 {
-    uint8_t error;
+    CPU_INT08U error;
 
     error = BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
     if (error)
@@ -34,30 +36,27 @@ void APP_TS_INT_Enable()
     HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 }
 
-// This function should be made to provide a interrupt to the kernel
-// For some odd reason the TS coordinates are not the same as screen coordinates
 // In TS top left corner is (0, 320)
-void APP_TS_Get_Cell(void *p_arg)
+// This function is reentrant since global variables are only read
+void APP_TS_Get_Cell()
 {  
     TS_StateTypeDef TS_state;
-    uint8_t column = 0, row = 0;
-
-    p_arg = p_arg;
+    CPU_INT08U column = 0, row = 0;
 
     BSP_TS_GetState(&TS_state);
     if (TS_state.TouchDetected && (TS_state.X < x_size && TS_state.Y < y_size))
     {
+        BSP_LED_Toggle(LED3);
         column = TS_state.X / x_spacing;
         row = (y_size - TS_state.Y) / y_spacing;
-
         APP_Draw_Circle(row, column);
-        
-        BSP_LED_Toggle(LED3);
     }
 }
 
 void EXTI15_10_IRQHandler(void)
 {
+    OS_ERR os_error;
+
     OSIntEnter();
 
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_15) != RESET)
@@ -66,6 +65,7 @@ void EXTI15_10_IRQHandler(void)
 
         if (BSP_TS_ITGetStatus() == 1)
         {
+            OSSemPost(&TS_Semaphore, OS_OPT_POST_1, &os_error);
             BSP_LED_Toggle(LED4);
         }
     }

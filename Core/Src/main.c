@@ -1,5 +1,4 @@
 #include "main.h"
-#include "os.h"
 
 #define TASK_STK_SIZE 256
 
@@ -12,8 +11,6 @@ static void App_TaskStart(void *p_arg);
 static OS_TCB App_TaskGetTouchTCB;
 static CPU_STK App_TaskGetTouchStk[TASK_STK_SIZE];
 static void App_TaskGetTouch(void *p_arg);
-
-OS_FLAG_GRP TSEventFlag;
 
 int main()
 {
@@ -34,8 +31,7 @@ int main()
     APP_Draw_Board();
     
     OSInit(&os_error);
-
-    OSFlagCreate(&TSEventFlag, "Touch Screen Flag", (OS_FLAGS)0, &os_error);
+    OSSemCreate(&TS_Semaphore, "Touch screen semaphore", 0, &os_error);
 
     OSTaskCreate((OS_TCB *)&App_TaskStartTCB,
                 (CPU_CHAR *)"App Task Start",
@@ -60,7 +56,7 @@ int main()
 
 static void App_TaskStart(void *p_arg)
 {   
-    OS_ERR err;
+    OS_ERR os_error;
 
     p_arg = p_arg;
 
@@ -79,28 +75,28 @@ static void App_TaskStart(void *p_arg)
                 (OS_TICK) 0,
                 (void *) 0,
                 (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-                (OS_ERR *)&err);
+                (OS_ERR *)&os_error);
 
     while (DEF_ON)
     {
         OSTimeDlyHMSM(0u, 0u, 0u, 500u,
             OS_OPT_TIME_HMSM_STRICT,
-            &err);
+            &os_error);
     }
 }
 
 static void App_TaskGetTouch(void *p_arg)
 {
-    OS_ERR err;
+    OS_ERR os_error;
 
     p_arg = p_arg;
 
     while (DEF_ON)
     {
-        APP_TS_Get_Cell();
-        BSP_LED_Toggle(LED3);
-        OSTimeDlyHMSM(0u, 0u, 0u, 500u,
-            OS_OPT_TIME_HMSM_STRICT,
-            &err);
+        OSSemPend(&TS_Semaphore, 0, OS_OPT_PEND_BLOCKING, NULL, &os_error);
+        if (os_error == OS_ERR_NONE)
+        {
+            APP_TS_Get_Cell();
+        }
     }
 }

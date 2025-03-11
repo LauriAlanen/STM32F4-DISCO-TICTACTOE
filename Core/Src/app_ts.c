@@ -10,9 +10,28 @@ uint8_t APP_TS_Init(void)
         return 1;
     }
 
+    APP_TS_INT_Enable();
+
     return 0;
 }
 
+void APP_TS_INT_Enable()
+{
+    BSP_LED_Init(LED4);
+    BSP_TS_ITConfig();  
+
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    GPIO_InitStruct.Pin = GPIO_PIN_15;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+}
 
 // This function should be made to provide a interrupt to the kernel
 // For some odd reason the TS coordinates are not the same as screen coordinates
@@ -34,4 +53,14 @@ void APP_TS_Get_Cell(void *p_arg)
         
         BSP_LED_Toggle(LED3);
     }
+}
+
+void EXTI15_10_IRQHandler(void)
+{
+    if (BSP_TS_ITGetStatus() == 1)
+    {
+        BSP_LED_Toggle(LED4);
+    }
+    
+    BSP_TS_ITClear();
 }

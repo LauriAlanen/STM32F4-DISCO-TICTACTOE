@@ -6,6 +6,7 @@
 #include "app_lcd.h"
 
 void APP_TS_Get_Cell();
+void APP_TS_INT_Enable();
 uint8_t APP_TS_Init();
 
 #endif

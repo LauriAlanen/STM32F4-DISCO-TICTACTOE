@@ -2,6 +2,8 @@
 
 CPU_INT16U x_size, y_size, x_spacing, y_spacing;
 
+OS_SEM LCD_Semaphore; 
+
 CPU_INT08U APP_LCD_Initialize()
 {
     CPU_INT08U error;
@@ -50,6 +52,10 @@ void APP_Draw_Board()
 
 CPU_INT08U APP_Draw_Circle(CPU_INT08U column, CPU_INT08U row)
 {
+    OS_ERR os_error;
+
+    OSSemPend(&LCD_Semaphore, 0, OS_OPT_PEND_BLOCKING, NULL, &os_error);
+
     if (column > BOARD_SIZE || row > BOARD_SIZE)
     {
         return 1;
@@ -62,6 +68,8 @@ CPU_INT08U APP_Draw_Circle(CPU_INT08U column, CPU_INT08U row)
     BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
     BSP_LCD_DrawCircle(x_draw_pos, y_draw_pos, radii);
     
+    OSSemPost(&LCD_Semaphore, OS_OPT_POST_NONE, &os_error);
+
     return 0;
 }
 

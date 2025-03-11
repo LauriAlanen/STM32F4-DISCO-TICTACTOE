@@ -49,7 +49,6 @@ void APP_TS_Get_Cell(TS_StateTypeDef* TS_state)
     if (TS_state->X < x_size && TS_state->Y < y_size)
     {
         BSP_LED_Toggle(LED3);
-
         column = TS_state->X / x_spacing;
         row = (y_size - TS_state->Y) / y_spacing;
         APP_Draw_Circle(row, column);

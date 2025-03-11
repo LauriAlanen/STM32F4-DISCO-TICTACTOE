@@ -31,7 +31,9 @@ int main()
     APP_Draw_Board();
     
     OSInit(&os_error);
+    
     OSSemCreate(&TS_Semaphore, "Touch screen semaphore", 0, &os_error);
+    OSSemCreate(&LCD_Semaphore, "LCD semaphore", 0, &os_error);
 
     OSQCreate(&TSEventQ,
         "Touch Event Queue",

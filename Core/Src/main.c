@@ -98,6 +98,7 @@ static void App_TaskGetTouch(void *p_arg)
     while (DEF_ON)
     {
         APP_TS_Get_Cell();
+        BSP_LED_Toggle(LED3);
         OSTimeDlyHMSM(0u, 0u, 0u, 500u,
             OS_OPT_TIME_HMSM_STRICT,
             &err);

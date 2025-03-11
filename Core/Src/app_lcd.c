@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "os.h"
 
-static uint16_t x_size, y_size, x_spacing, y_spacing; // Screen size, and grid spacing (only read)
+uint16_t x_size, y_size, x_spacing, y_spacing;
 
 uint8_t APP_LCD_Initialize()
 {
@@ -21,18 +21,8 @@ uint8_t APP_LCD_Initialize()
     BSP_LCD_Clear(LCD_COLOR_BLACK);
     BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
     
-    error = BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
-    if (error)
-    {
-        return 1;
-    }
+    APP_TS_Init();    
 
-/*     error = BSP_TS_ITConfig();
-    if (error)
-    {
-        return 1;
-    } */
-    
     x_size = BSP_LCD_GetXSize(); // 240
     y_size = BSP_LCD_GetYSize(); // 320
     x_spacing = x_size / BOARD_SIZE;
@@ -57,29 +47,6 @@ void APP_Draw_Board()
     {
         draw_pos = i * y_spacing;
         BSP_LCD_DrawLine(0, draw_pos, x_size, draw_pos);
-    }
-}
-
-// This function should be made to provide a interrupt to the kernel
-// For some odd reason the TS coordinates are not the same as screen coordinates
-// In TS top left corner is (0, 320)
-void APP_TS_Get_Cell(void *p_arg)
-{  
-    TS_StateTypeDef TS_state;
-    uint8_t column = 0, row = 0;
-
-    p_arg = p_arg;
-
-    BSP_TS_GetState(&TS_state);
-
-    if (TS_state.TouchDetected && (TS_state.X < x_size && TS_state.Y < y_size))
-    {
-        column = TS_state.X / x_spacing;
-        row = (y_size - TS_state.Y) / y_spacing;
-
-        APP_Draw_Circle(row, column);
-        
-        BSP_LED_Toggle(LED3);
     }
 }
 

@@ -12,6 +12,7 @@
         "stm32f4xx_hal.h": "c",
         "stm32f4xx_hal_conf.h": "c",
         "utils.h": "c",
-        "stmpe811.h": "c"
+        "stmpe811.h": "c",
+        "app_ts.h": "c"
     }
 }

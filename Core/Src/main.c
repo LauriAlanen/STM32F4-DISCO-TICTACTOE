@@ -33,6 +33,18 @@ int main()
     OSInit(&os_error);
     OSSemCreate(&TS_Semaphore, "Touch screen semaphore", 0, &os_error);
 
+    OSQCreate(&TSEventQ,
+        "Touch Event Queue",
+        TOUCH_QUEUE_SIZE,
+        &os_error);
+
+    OSMemCreate(&TSMemPool,
+            "TS Buffer",
+            &TSMemPoolBuffer,
+            TOUCH_POOL_SIZE,
+            (OS_MEM_SIZE)sizeof(TS_StateTypeDef),
+            &os_error);
+
     OSTaskCreate((OS_TCB *)&App_TaskStartTCB,
                 (CPU_CHAR *)"App Task Start",
                 (OS_TASK_PTR) App_TaskStart,
@@ -88,15 +100,21 @@ static void App_TaskStart(void *p_arg)
 static void App_TaskGetTouch(void *p_arg)
 {
     OS_ERR os_error;
+    TS_StateTypeDef* TS_state;
 
     p_arg = p_arg;
 
     while (DEF_ON)
     {
-        OSSemPend(&TS_Semaphore, 0, OS_OPT_PEND_BLOCKING, NULL, &os_error);
-        if (os_error == OS_ERR_NONE)
-        {
-            APP_TS_Get_Cell();
-        }
+        //OSSemPend(&TS_Semaphore, 0, OS_OPT_PEND_BLOCKING, NULL, &os_error);
+        TS_state = (TS_StateTypeDef *)OSQPend((OS_Q *)&TSEventQ,
+                    0,
+                    OS_OPT_PEND_BLOCKING,
+                    (OS_MSG_SIZE *)sizeof(TS_StateTypeDef),
+                    DEF_NULL,                
+                    &os_error);
+
+        APP_TS_Get_Cell(TS_state);
+        OSMemPut(&TSMemPool, (void *)TS_state, &os_error);
     }
 }

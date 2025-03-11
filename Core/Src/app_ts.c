@@ -1,4 +1,5 @@
 #include "app_ts.h"
+#include "os.h"
 
 uint8_t APP_TS_Init(void)
 {
@@ -57,10 +58,18 @@ void APP_TS_Get_Cell(void *p_arg)
 
 void EXTI15_10_IRQHandler(void)
 {
-    if (BSP_TS_ITGetStatus() == 1)
+    OSIntEnter();
+
+    if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_15) != RESET)
     {
-        BSP_LED_Toggle(LED4);
+        __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15);
+
+        if (BSP_TS_ITGetStatus() == 1)
+        {
+            BSP_LED_Toggle(LED4);
+        }
     }
-    
+
     BSP_TS_ITClear();
+    OSIntExit();
 }

@@ -17,5 +17,5 @@ target_include_directories(stm32-bsp PUBLIC
     ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Include
 )
 
-target_link_libraries(stm32-bsp PUBLIC stm32cubemx)
+target_link_libraries(stm32-bsp PUBLIC stm32cubemx uC-OS3)
 

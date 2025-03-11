@@ -31,6 +31,7 @@ target_sources(uC-OS3 PRIVATE
 )
 
 target_include_directories(uC-OS3 PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/CPU
     ${CMAKE_CURRENT_SOURCE_DIR}/Ports/ARM-Cortex-M/ARMv7-M
     ${CMAKE_CURRENT_SOURCE_DIR}/Source

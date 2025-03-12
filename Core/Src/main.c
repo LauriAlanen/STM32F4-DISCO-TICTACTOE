@@ -1,4 +1,5 @@
 #include "main.h"
+#include <stdio.h>
 
 #define TASK_STK_SIZE 256
 
@@ -115,11 +116,12 @@ static void App_TaskGetTouch(void *p_arg)
                     (OS_MSG_SIZE *)sizeof(TS_StateTypeDef),
                     DEF_NULL,                
                     &os_error);
-        snprintf(debug_buffer, 20, "O-%d:%d\r\n", TS_state->X, TS_state->Y);
-        debug_print(debug_buffer);
+        // snprintf(debug_buffer, 20, "O-%d:%d\r\n", TS_state->X, TS_state->Y);
+        // debug_print(debug_buffer);
 
         APP_TS_Get_Cell(TS_state);
         OSMemPut(&TSMemPool, (void *)TS_state, &os_error);
+        OSQFlush(&TSEventQ, &os_error);
         HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
     }
 }

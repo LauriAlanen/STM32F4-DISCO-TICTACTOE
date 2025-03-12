@@ -52,8 +52,6 @@ void APP_Draw_Board()
 
 CPU_INT08U APP_Draw_Circle(CPU_INT08U column, CPU_INT08U row)
 {
-    OS_ERR os_error;
-
     if (column > BOARD_SIZE || row > BOARD_SIZE)
     {
         return 1;

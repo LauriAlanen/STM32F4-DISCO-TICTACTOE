@@ -16,7 +16,12 @@ extern OS_Q TSEventQ;
 extern OS_MEM TSMemPool;
 extern TS_StateTypeDef TSMemPoolBuffer[TOUCH_POOL_SIZE];
 
-void APP_TS_Get_Cell(TS_StateTypeDef* TS_state);
+typedef struct Cell {
+    CPU_INT08U row;
+    CPU_INT08U column;
+}Cell;
+
+void APP_TS_Get_Cell(TS_StateTypeDef* TS_state, Cell* touched_cell);
 void APP_TS_INT_Enable();
 CPU_INT08U APP_TS_Init();
 

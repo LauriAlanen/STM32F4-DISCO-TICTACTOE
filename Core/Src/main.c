@@ -3,15 +3,27 @@
 
 #define TASK_STK_SIZE 256
 
-#define START_TASK_PRIORITY 12
+#define START_TASK_PRIORITY 15
 static OS_TCB App_TaskStartTCB;
 static CPU_STK App_TaskStartStk[TASK_STK_SIZE];
 static void App_TaskStart(void *p_arg);
 
-#define TASK_GET_TOUCH_PRIORITY 11
+#define CROSS_TASK_PRIORITY 13
+static OS_TCB App_TaskCrossTCB;
+static CPU_STK App_TaskCrossStk[TASK_STK_SIZE];
+static void App_TaskCross(void *p_arg);
+
+#define CIRCLE_TASK_PRIORITY 12
+static OS_TCB App_TaskCircleTCB;
+static CPU_STK App_TaskCircleStk[TASK_STK_SIZE];
+static void App_TaskCircle(void *p_arg);
+
+#define GET_TOUCH_TASK_PRIORITY 11
 static OS_TCB App_TaskGetTouchTCB;
 static CPU_STK App_TaskGetTouchStk[TASK_STK_SIZE];
 static void App_TaskGetTouch(void *p_arg);
+
+OS_FLAG_GRP GameFlags;
 
 int main()
 {
@@ -49,6 +61,11 @@ int main()
             (OS_MEM_SIZE)sizeof(TS_StateTypeDef),
             &os_error);
 
+    OSFlagCreate (&GameFlags,
+                (CPU_CHAR *)"Game Flags",
+                (OS_FLAGS)0,
+                &os_error);
+
     OSTaskCreate((OS_TCB *)&App_TaskStartTCB,
                 (CPU_CHAR *)"App Task Start",
                 (OS_TASK_PTR) App_TaskStart,
@@ -83,8 +100,36 @@ static void App_TaskStart(void *p_arg)
                 (CPU_CHAR *)"App Task Get Touch",
                 (OS_TASK_PTR) App_TaskGetTouch,
                 (void *) 0,
-                (OS_PRIO) TASK_GET_TOUCH_PRIORITY,
+                (OS_PRIO) GET_TOUCH_TASK_PRIORITY,
                 (CPU_STK *)&App_TaskGetTouchStk[0],
+                (CPU_STK_SIZE)(TASK_STK_SIZE / 10u),
+                (CPU_STK_SIZE) TASK_STK_SIZE,
+                (OS_MSG_QTY) 0,
+                (OS_TICK) 0,
+                (void *) 0,
+                (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+                (OS_ERR *)&os_error);
+
+    OSTaskCreate((OS_TCB *)&App_TaskCircleTCB,
+                (CPU_CHAR *)"App Task Circle",
+                (OS_TASK_PTR) App_TaskCircle,
+                (void *) 0,
+                (OS_PRIO) CIRCLE_TASK_PRIORITY,
+                (CPU_STK *)&App_TaskCircleStk[0],
+                (CPU_STK_SIZE)(TASK_STK_SIZE / 10u),
+                (CPU_STK_SIZE) TASK_STK_SIZE,
+                (OS_MSG_QTY) 0,
+                (OS_TICK) 0,
+                (void *) 0,
+                (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+                (OS_ERR *)&os_error);
+
+    OSTaskCreate((OS_TCB *)&App_TaskCrossTCB,
+                (CPU_CHAR *)"App Task Cross",
+                (OS_TASK_PTR) App_TaskCross,
+                (void *) 0,
+                (OS_PRIO) CROSS_TASK_PRIORITY,
+                (CPU_STK *)&App_TaskCrossStk[0],
                 (CPU_STK_SIZE)(TASK_STK_SIZE / 10u),
                 (CPU_STK_SIZE) TASK_STK_SIZE,
                 (OS_MSG_QTY) 0,
@@ -105,7 +150,8 @@ static void App_TaskGetTouch(void *p_arg)
 {
     OS_ERR os_error;
     TS_StateTypeDef* TS_state;
-    char debug_buffer[20];
+    Cell touched_cell;
+
     p_arg = p_arg;
 
     while (DEF_ON)
@@ -116,12 +162,56 @@ static void App_TaskGetTouch(void *p_arg)
                     (OS_MSG_SIZE *)sizeof(TS_StateTypeDef),
                     DEF_NULL,                
                     &os_error);
-        // snprintf(debug_buffer, 20, "O-%d:%d\r\n", TS_state->X, TS_state->Y);
-        // debug_print(debug_buffer);
 
-        APP_TS_Get_Cell(TS_state);
+        APP_TS_Get_Cell(TS_state, &touched_cell);
+        APP_Draw_Circle(touched_cell.column, touched_cell.row);
+        
         OSMemPut(&TSMemPool, (void *)TS_state, &os_error);
         OSQFlush(&TSEventQ, &os_error);
         HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+    }
+}
+
+static void App_TaskCircle(void *p_arg)
+{
+    OS_ERR os_error;
+    OS_FLAGS flag_value;
+
+    p_arg = p_arg;
+
+    while (DEF_ON)
+    {
+        flag_value = OSFlagPend(&GameFlags,
+            FLAG_TURN_CIRCLES,
+            0,
+            OS_OPT_PEND_BLOCKING,
+            DEF_NULL,
+            &os_error);
+
+        OSTimeDlyHMSM(0u, 0u, 0u, 500u,
+            OS_OPT_TIME_HMSM_STRICT,
+            &os_error);
+    }
+}
+    
+static void App_TaskCross(void *p_arg)
+{
+    OS_ERR os_error;
+    OS_FLAGS flag_value;
+
+    p_arg = p_arg;
+
+    while (DEF_ON)
+    {
+        flag_value = OSFlagPend(&GameFlags,
+            FLAG_TURN_CROSSES,
+            0,
+            OS_OPT_PEND_BLOCKING,
+            DEF_NULL,
+            &os_error);
+
+        OSTimeDlyHMSM(0u, 0u, 0u, 500u,
+            OS_OPT_TIME_HMSM_STRICT,
+            &os_error);
     }
 }

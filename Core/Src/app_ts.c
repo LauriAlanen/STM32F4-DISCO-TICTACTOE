@@ -4,7 +4,6 @@
 OS_SEM TS_Semaphore;
 
 OS_Q TSEventQ;
-
 OS_MEM TSMemPool;
 TS_StateTypeDef TSMemPoolBuffer[TOUCH_POOL_SIZE];
 
@@ -43,16 +42,13 @@ void APP_TS_INT_Enable()
 
 // In TS top left corner is (0, 320)
 // This function is reentrant since global variables are only read
-void APP_TS_Get_Cell(TS_StateTypeDef* TS_state)
+void APP_TS_Get_Cell(TS_StateTypeDef* TS_state, Cell* touched_cell)
 {  
-    CPU_INT08U column = 0, row = 0;
-
     if (TS_state->TouchDetected && TS_state->X < x_size && TS_state->Y < y_size)
     {
         BSP_LED_Toggle(LED3);
-        column = TS_state->X / x_spacing;
-        row = (y_size - TS_state->Y) / y_spacing;
-        APP_Draw_Circle(row, column);
+        touched_cell->row = TS_state->X / x_spacing;
+        touched_cell->column = (y_size - TS_state->Y) / y_spacing;
     }
 }
 

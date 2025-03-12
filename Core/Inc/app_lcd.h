@@ -4,9 +4,10 @@
 #include "stm32f429i_discovery_lcd.h"
 #include "stm32f429i_discovery_ts.h"
 #include "app_ts.h"
+#include "utils.h"
 #include "os.h"
 
-#define BOARD_SIZE 5
+#define BOARD_SIZE 20
 #define ICON_PADDING 10
 
 extern CPU_INT16U x_size, y_size, x_spacing, y_spacing; // Screen size, and grid spacing (only read)

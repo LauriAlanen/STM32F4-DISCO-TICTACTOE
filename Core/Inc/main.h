@@ -7,4 +7,10 @@
 #include "utils.h"
 #include "os.h"
 
+extern OS_FLAG_GRP GameFlags;
+
+#define FLAG_GAME_OVER 0x0
+#define FLAG_TURN_CROSSES 0x1
+#define FLAG_TURN_CIRCLES 0x2
+
 #endif

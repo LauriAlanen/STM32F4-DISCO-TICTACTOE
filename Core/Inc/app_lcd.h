@@ -11,6 +11,7 @@
 
 extern CPU_INT16U x_size, y_size, x_spacing, y_spacing; // Screen size, and grid spacing (only read)
 extern OS_SEM LCD_Semaphore;
+extern OS_SEM LCD_Semaphore; 
 
 CPU_INT08U APP_LCD_Initialize();
 CPU_INT08U APP_Draw_Cross(CPU_INT08U column, CPU_INT08U row);

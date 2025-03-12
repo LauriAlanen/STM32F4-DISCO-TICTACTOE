@@ -1,4 +1,5 @@
 #include "app_ts.h"
+#include <stdio.h>
 
 OS_SEM TS_Semaphore;
 
@@ -9,10 +10,10 @@ TS_StateTypeDef TSMemPoolBuffer[TOUCH_POOL_SIZE];
 
 CPU_INT08U APP_TS_Init(void)
 {
-    CPU_INT08U error;
-
-    error = BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
-    if (error)
+    OS_ERR os_error;
+    
+    os_error = BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
+    if (os_error)
     {
         return 1;
     }
@@ -45,8 +46,9 @@ void APP_TS_INT_Enable()
 void APP_TS_Get_Cell(TS_StateTypeDef* TS_state)
 {  
     CPU_INT08U column = 0, row = 0;
+    OS_ERR os_error;
 
-    if (TS_state->X < x_size && TS_state->Y < y_size)
+    if (TS_state->TouchDetected && TS_state->X < x_size && TS_state->Y < y_size)
     {
         BSP_LED_Toggle(LED3);
         column = TS_state->X / x_spacing;
@@ -59,7 +61,7 @@ void EXTI15_10_IRQHandler(void)
 {
     OS_ERR os_error;
     TS_StateTypeDef *TS_state;
-
+    char debug_buffer[20];
     OSIntEnter();
 
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_15) != RESET)
@@ -68,10 +70,13 @@ void EXTI15_10_IRQHandler(void)
 
         if (BSP_TS_ITGetStatus() == 1)
         {
+            HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
             BSP_LED_Toggle(LED4);
 
             TS_state = (TS_StateTypeDef *)OSMemGet(&TSMemPool, &os_error);
             BSP_TS_GetState(TS_state);
+            snprintf(debug_buffer, 20, "%d:%d\r\n", TS_state->X, TS_state->Y);
+            debug_print(debug_buffer);
 
             OSQPost(&TSEventQ,
                 (void *)TS_state,

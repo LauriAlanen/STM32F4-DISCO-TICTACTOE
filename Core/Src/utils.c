@@ -1,5 +1,7 @@
 #include "utils.h"
 
+UART_HandleTypeDef huart1;
+
 void SystemClock_Config(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -42,6 +44,42 @@ void SystemClock_Config(void)
     PeriphClkInitStruct.PLLSAI.PLLSAIR = 2;
     PeriphClkInitStruct.PLLSAIDivR = RCC_PLLSAIDIVR_2;
     HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
+}
+
+void UART3_Init()
+{
+    __HAL_RCC_USART1_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    GPIO_InitStruct.Pin = GPIO_PIN_9 | GPIO_PIN_10;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    // Configure UART3
+    huart1.Instance = USART1;
+    huart1.Init.BaudRate = 9600;
+    huart1.Init.WordLength = UART_WORDLENGTH_8B;
+    huart1.Init.StopBits = UART_STOPBITS_1;
+    huart1.Init.Parity = UART_PARITY_NONE;
+    huart1.Init.Mode = UART_MODE_TX_RX;
+    huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+    
+    if (HAL_UART_Init(&huart1) != HAL_OK)
+    {
+        // Handle error
+        while (1);
+    }
+}
+
+void debug_print(char *msg)
+{
+    HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
 }
 
 void HAL_Delay(uint32_t delay)

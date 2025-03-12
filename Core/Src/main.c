@@ -29,11 +29,12 @@ int main()
     }
 
     APP_Draw_Board();
-    
+    UART3_Init();
+
     OSInit(&os_error);
     
     OSSemCreate(&TS_Semaphore, "Touch screen semaphore", 0, &os_error);
-    OSSemCreate(&LCD_Semaphore, "LCD semaphore", 0, &os_error);
+    OSSemCreate(&LCD_Semaphore, "LCD semaphore", 1, &os_error);
 
     OSQCreate(&TSEventQ,
         "Touch Event Queue",
@@ -103,20 +104,22 @@ static void App_TaskGetTouch(void *p_arg)
 {
     OS_ERR os_error;
     TS_StateTypeDef* TS_state;
-
+    char debug_buffer[20];
     p_arg = p_arg;
 
     while (DEF_ON)
     {
-        //OSSemPend(&TS_Semaphore, 0, OS_OPT_PEND_BLOCKING, NULL, &os_error);
         TS_state = (TS_StateTypeDef *)OSQPend((OS_Q *)&TSEventQ,
                     0,
                     OS_OPT_PEND_BLOCKING,
                     (OS_MSG_SIZE *)sizeof(TS_StateTypeDef),
                     DEF_NULL,                
                     &os_error);
+        snprintf(debug_buffer, 20, "O-%d:%d\r\n", TS_state->X, TS_state->Y);
+        debug_print(debug_buffer);
 
         APP_TS_Get_Cell(TS_state);
         OSMemPut(&TSMemPool, (void *)TS_state, &os_error);
+        HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
     }
 }

@@ -5,6 +5,7 @@
 #include "stm32f429i_discovery_ts.h"
 #include "app_lcd.h"
 #include "os.h"
+#include "utils.h"
 
 #define TOUCH_QUEUE_SIZE 10
 #define TOUCH_POOL_SIZE 10

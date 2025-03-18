@@ -67,6 +67,20 @@ CPU_INT08U APP_Draw_Circle(CPU_INT08U column, CPU_INT08U row)
     return 0;
 }
 
+CPU_INT08U APP_Draw_Cross(CPU_INT08U column, CPU_INT08U row)
+{
+    if (column > BOARD_SIZE || row > BOARD_SIZE)
+    {
+        return 1;
+    }
+
+    CPU_INT16U x_draw_pos = (row * x_spacing) + x_spacing / 2;
+    CPU_INT16U y_draw_pos = (column * y_spacing) + y_spacing / 2;
+
+    BSP_LCD_DrawLine(x_draw_pos, y_draw_pos, x_draw_pos + 20, y_draw_pos + 20);
+}
+
+
 void APP_Draw_Text(CPU_INT16U Line, CPU_INT08U *ptr)
 {
     CPU_INT32U color = BSP_LCD_GetTextColor();

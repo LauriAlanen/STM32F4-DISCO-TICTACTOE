@@ -152,7 +152,6 @@ static void App_TaskCircle(void *p_arg)
                     &os_error);
         
         debug_print("TaskCircle: Waiting for queue\n\r");
-        OSQFlush(&TSEventQ, &os_error);
         TS_state = (TS_StateTypeDef *)OSQPend((OS_Q *)&TSEventQ,
                     0,
                     OS_OPT_PEND_BLOCKING,
@@ -200,7 +199,6 @@ static void App_TaskCross(void *p_arg)
                     &os_error);
 
         debug_print("TaskCross: Waiting for queue\n\r");
-        OSQFlush(&TSEventQ, &os_error);
         TS_state = (TS_StateTypeDef *)OSQPend((OS_Q *)&TSEventQ,
                     0,
                     OS_OPT_PEND_BLOCKING,

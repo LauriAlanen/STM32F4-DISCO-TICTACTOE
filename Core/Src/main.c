@@ -48,7 +48,7 @@ int main()
         "Touch Event Queue",
         TOUCH_QUEUE_SIZE,
         &os_error);
-
+    
     OSMemCreate(&TSMemPool,
             "TS Buffer",
             &TSMemPoolBuffer,
@@ -122,9 +122,11 @@ static void App_TaskStart(void *p_arg)
                 (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                 (OS_ERR *)&os_error);
 
+    debug_print("\n\r");
+
     while (DEF_ON)
     {
-        OSTimeDlyHMSM(0u, 0u, 1u, 0u,
+        OSTimeDlyHMSM(0u, 0u, 0u, 500u,
             OS_OPT_TIME_HMSM_STRICT,
             &os_error);
         BSP_LED_Toggle(LED3);
@@ -141,9 +143,6 @@ static void App_TaskCircle(void *p_arg)
 
     while (DEF_ON)
     {
-        HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
-        debug_print("TaskCircle: Interrupts enabled!\n\r");
-
         debug_print("TaskCircle: Waiting for flag.\n\r");
         OSFlagPend(&GameFlags,
             FLAG_TURN_CIRCLES,
@@ -161,21 +160,19 @@ static void App_TaskCircle(void *p_arg)
                     DEF_NULL,                
                     &os_error);
         debug_print("TaskCircle: Got data!\n\r");
-        
+
         APP_TS_Get_Cell(TS_state, &touched_cell);
         APP_Draw_Circle(touched_cell.column, touched_cell.row);
         OSMemPut(&TSMemPool, (void *)TS_state, &os_error);
-        
-        OSTimeDlyHMSM(0u, 0u, 0u, 500u,
-            OS_OPT_TIME_HMSM_STRICT,
-            &os_error);
-
-        HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 
         OSFlagPost(&GameFlags,
             FLAG_TURN_CROSSES,
             OS_OPT_POST_FLAG_SET,
             &os_error);
+
+        OSTimeDly(10, OS_OPT_TIME_PERIODIC, &os_error); // small delay
+        debug_print("TaskCircle: Interrupts enabled!\n\r");
+        HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
     }
 }
     
@@ -189,9 +186,6 @@ static void App_TaskCross(void *p_arg)
     
     while (DEF_ON)
     {
-        HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
-        debug_print("TaskCross : Interrupts enabled!\n\r");
-
         debug_print("TaskCross: Waiting for flag.\n\r");
         OSFlagPend(&GameFlags,
                     FLAG_TURN_CROSSES,
@@ -209,20 +203,19 @@ static void App_TaskCross(void *p_arg)
                     DEF_NULL,                
                     &os_error);
         debug_print("TaskCross: Got data!\n\r");
-    
+        
         APP_TS_Get_Cell(TS_state, &touched_cell);
         APP_Draw_Cross(touched_cell.column, touched_cell.row);
         OSMemPut(&TSMemPool, (void *)TS_state, &os_error);
-        
-        OSTimeDlyHMSM(0u, 0u, 0u, 500u,
-            OS_OPT_TIME_HMSM_STRICT,
+            
+        OSFlagPost(&GameFlags,
+            FLAG_TURN_CIRCLES,
+            OS_OPT_POST_FLAG_SET,
             &os_error);
 
-        HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
-
-        OSFlagPost(&GameFlags,
-                FLAG_TURN_CIRCLES,
-                OS_OPT_POST_FLAG_SET,
-                &os_error);
+        OSTimeDly(10, OS_OPT_TIME_PERIODIC, &os_error); // small delay
+        
+        debug_print("TaskCross : Interrupts enabled!\n\r");
+        HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
     }
 }

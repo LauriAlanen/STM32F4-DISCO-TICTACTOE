@@ -54,12 +54,20 @@ void EXTI15_10_IRQHandler(void)
     TS_StateTypeDef *TS_state;
     
     OSIntEnter();
-    
+    HAL_NVIC_ClearPendingIRQ(EXTI15_10_IRQn);
+
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_15) != RESET)
     {
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15);
+        HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+        
+        debug_print("From Interrupt: Interrupts Disabled\n\r");
+
         TS_state = (TS_StateTypeDef *)OSMemGet(&TSMemPool, &os_error);
         BSP_TS_GetState(TS_state);
+        char debug_buffer[100];
+        snprintf(debug_buffer, 30, "(%d,%d)\n\r", TS_state->X, TS_state->Y);
+        debug_print(debug_buffer);
         BSP_LED_Toggle(LED4);
         
         OSQPost(&TSEventQ,
@@ -69,7 +77,6 @@ void EXTI15_10_IRQHandler(void)
             &os_error);         
     }
             
-    HAL_NVIC_ClearPendingIRQ(EXTI15_10_IRQn);
-    BSP_TS_ITClear();
     OSIntExit();
+    debug_print("From Interrupt: Exiting interrupt\n\r\n\r");
 }

@@ -7,8 +7,8 @@
 #include "os.h"
 #include "utils.h"
 
-#define TOUCH_QUEUE_SIZE 10
-#define TOUCH_POOL_SIZE 10
+#define TOUCH_QUEUE_SIZE 5
+#define TOUCH_POOL_SIZE 5
 
 extern OS_SEM TS_Semaphore;
 extern OS_Q TSEventQ;

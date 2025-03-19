@@ -145,11 +145,11 @@ static void App_TaskCircle(void *p_arg)
     {
         debug_print("TaskCircle: Waiting for flag.\n\r");
         OSFlagPend(&GameFlags,
-            FLAG_TURN_CIRCLES,
-            0,
-            OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_BLOCKING,
-            DEF_NULL,
-            &os_error);
+                    FLAG_TURN_CIRCLES,
+                    0,
+                    OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_BLOCKING,
+                    DEF_NULL,
+                    &os_error);
         
         debug_print("TaskCircle: Waiting for queue\n\r");
         OSQFlush(&TSEventQ, &os_error);
@@ -165,14 +165,19 @@ static void App_TaskCircle(void *p_arg)
         APP_Draw_Circle(touched_cell.column, touched_cell.row);
         OSMemPut(&TSMemPool, (void *)TS_state, &os_error);
 
+        OSTimeDlyHMSM(0u, 0u, 0u, 200u,
+                    OS_OPT_TIME_HMSM_STRICT,
+                    &os_error);
+
         OSFlagPost(&GameFlags,
             FLAG_TURN_CROSSES,
             OS_OPT_POST_FLAG_SET,
             &os_error);
 
-        OSTimeDly(10, OS_OPT_TIME_PERIODIC, &os_error); // small delay
         debug_print("TaskCircle: Interrupts enabled!\n\r");
+        __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15);
         HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+        debug_print("TaskCircle: Exiting!\n\r");
     }
 }
     
@@ -207,15 +212,19 @@ static void App_TaskCross(void *p_arg)
         APP_TS_Get_Cell(TS_state, &touched_cell);
         APP_Draw_Cross(touched_cell.column, touched_cell.row);
         OSMemPut(&TSMemPool, (void *)TS_state, &os_error);
-            
+
+        OSTimeDlyHMSM(0u, 0u, 0u, 200u,
+            OS_OPT_TIME_HMSM_STRICT,
+            &os_error);
+
         OSFlagPost(&GameFlags,
             FLAG_TURN_CIRCLES,
             OS_OPT_POST_FLAG_SET,
             &os_error);
 
-        OSTimeDly(10, OS_OPT_TIME_PERIODIC, &os_error); // small delay
-        
         debug_print("TaskCross : Interrupts enabled!\n\r");
+        __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15);
         HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+        debug_print("TaskCross: Exiting!\n\r");
     }
 }

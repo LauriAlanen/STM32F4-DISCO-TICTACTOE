@@ -74,12 +74,12 @@ CPU_INT08U APP_Draw_Cross(CPU_INT08U column, CPU_INT08U row)
         return 1;
     }
 
-    CPU_INT16U x_draw_pos = (row * x_spacing) + x_spacing / 2;
-    CPU_INT16U y_draw_pos = (column * y_spacing) + y_spacing / 2;
+    CPU_INT16U x_draw_pos = row * x_spacing;
+    CPU_INT16U y_draw_pos = column * y_spacing;
 
-    BSP_LCD_DrawLine(x_draw_pos, y_draw_pos, x_draw_pos + 20, y_draw_pos + 20);
+    BSP_LCD_DrawLine(x_draw_pos + ICON_PADDING, y_draw_pos + ICON_PADDING, x_draw_pos + x_spacing - ICON_PADDING, y_draw_pos + y_spacing - ICON_PADDING);
+    BSP_LCD_DrawLine(x_draw_pos + x_spacing - ICON_PADDING, y_draw_pos + ICON_PADDING, x_draw_pos + ICON_PADDING, y_draw_pos + y_spacing - ICON_PADDING);
 }
-
 
 void APP_Draw_Text(CPU_INT16U Line, CPU_INT08U *ptr)
 {

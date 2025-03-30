@@ -159,17 +159,29 @@ static void App_TaskCircle(void *p_arg)
                     &os_error);
 
         APP_TS_Get_Cell(TS_state, &touched_cell);
-        APP_Draw_Circle(touched_cell.column, touched_cell.row);
+        CPU_INT08U draw_error = APP_Draw_Circle(touched_cell.column, touched_cell.row);
         OSMemPut(&TSMemPool, (void *)TS_state, &os_error);
 
         OSTimeDlyHMSM(0u, 0u, 0u, 100u,
                     OS_OPT_TIME_HMSM_STRICT,
                     &os_error);
 
-        OSFlagPost(&GameFlags,
-            FLAG_TURN_CROSSES,
-            OS_OPT_POST_FLAG_SET,
-            &os_error);
+        if (draw_error)
+        {
+            debug_print("TaskCircle: Retrying draw!\n\r");
+            OSFlagPost(&GameFlags,
+                        FLAG_TURN_CIRCLES,
+                        OS_OPT_POST_FLAG_SET,
+                        &os_error);
+        }
+                                
+        else
+        {
+            OSFlagPost(&GameFlags,
+                        FLAG_TURN_CROSSES,
+                        OS_OPT_POST_FLAG_SET,
+                        &os_error);
+        }
 
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15); // Clear all pending interrupts
         HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
@@ -201,17 +213,29 @@ static void App_TaskCross(void *p_arg)
                     &os_error);
         
         APP_TS_Get_Cell(TS_state, &touched_cell);
-        APP_Draw_Cross(touched_cell.column, touched_cell.row);
+        CPU_INT08U draw_error = APP_Draw_Cross(touched_cell.column, touched_cell.row);
         OSMemPut(&TSMemPool, (void *)TS_state, &os_error);
 
         OSTimeDlyHMSM(0u, 0u, 0u, 100u,
-            OS_OPT_TIME_HMSM_STRICT,
-            &os_error);
+                    OS_OPT_TIME_HMSM_STRICT,
+                    &os_error);
 
-        OSFlagPost(&GameFlags,
-            FLAG_TURN_CIRCLES,
-            OS_OPT_POST_FLAG_SET,
-            &os_error);
+        if (draw_error)
+        {
+            debug_print("TaskCross: Retrying draw!\n\r");
+            OSFlagPost(&GameFlags,
+                        FLAG_TURN_CROSSES,
+                        OS_OPT_POST_FLAG_SET,
+                        &os_error);
+        }
+                                
+        else
+        {
+            OSFlagPost(&GameFlags,
+                        FLAG_TURN_CIRCLES,
+                        OS_OPT_POST_FLAG_SET,
+                        &os_error);
+        }
 
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15); // Clear all pending interrupts
         HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);

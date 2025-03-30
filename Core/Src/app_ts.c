@@ -54,6 +54,9 @@ void EXTI15_10_IRQHandler(void)
     TS_StateTypeDef *TS_state;
     
     OSIntEnter();
+    
+    HAL_NVIC_ClearPendingIRQ(EXTI15_10_IRQn);
+    BSP_TS_ITClear();  
 
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_15) != RESET)
     {
@@ -75,8 +78,6 @@ void EXTI15_10_IRQHandler(void)
             OS_OPT_POST_FIFO,
             &os_error);     
     }
-    
-    HAL_NVIC_ClearPendingIRQ(EXTI15_10_IRQn);
-    BSP_TS_ITClear();  
+
     OSIntExit();
 }

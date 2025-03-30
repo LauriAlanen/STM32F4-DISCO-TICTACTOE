@@ -164,7 +164,7 @@ static void App_TaskCircle(void *p_arg)
         APP_Draw_Circle(touched_cell.column, touched_cell.row);
         OSMemPut(&TSMemPool, (void *)TS_state, &os_error);
 
-        OSTimeDlyHMSM(0u, 0u, 0u, 200u,
+        OSTimeDlyHMSM(0u, 0u, 0u, 100u,
                     OS_OPT_TIME_HMSM_STRICT,
                     &os_error);
 
@@ -174,7 +174,7 @@ static void App_TaskCircle(void *p_arg)
             &os_error);
 
         debug_print("TaskCircle: Interrupts enabled!\n\r");
-        __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15);
+        __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15); // Clear all pending interrupts
         HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
         debug_print("TaskCircle: Exiting!\n\r");
     }
@@ -211,7 +211,7 @@ static void App_TaskCross(void *p_arg)
         APP_Draw_Cross(touched_cell.column, touched_cell.row);
         OSMemPut(&TSMemPool, (void *)TS_state, &os_error);
 
-        OSTimeDlyHMSM(0u, 0u, 0u, 200u,
+        OSTimeDlyHMSM(0u, 0u, 0u, 100u,
             OS_OPT_TIME_HMSM_STRICT,
             &os_error);
 
@@ -221,7 +221,7 @@ static void App_TaskCross(void *p_arg)
             &os_error);
 
         debug_print("TaskCross : Interrupts enabled!\n\r");
-        __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15);
+        __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15); // Clear all pending interrupts
         HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
         debug_print("TaskCross: Exiting!\n\r");
     }

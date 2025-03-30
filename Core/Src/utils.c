@@ -79,7 +79,9 @@ void UART3_Init()
 
 void debug_print(char *msg)
 {
+    #if DEBUG == 1
     HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+    #endif
 }
 
 void HAL_Delay(uint32_t delay)

@@ -1,4 +1,6 @@
 #include "app_lcd.h"
+#include "utils.h"
+#include <stdio.h>
 
 CPU_INT16U x_size, y_size, x_spacing, y_spacing;
 
@@ -57,6 +59,10 @@ CPU_INT08U APP_Draw_Circle(CPU_INT08U column, CPU_INT08U row)
         return 1;
     }
 
+    char debug_buffer[20];
+    snprintf(debug_buffer, 20, "Circle (%d, %d)\n\r", column, row);
+    debug_print(debug_buffer);
+    
     CPU_INT16U radii = (x_spacing - ICON_PADDING) / 2;
     CPU_INT16U x_draw_pos = (row * x_spacing) + x_spacing / 2;
     CPU_INT16U y_draw_pos = (column * y_spacing) + y_spacing / 2;
@@ -73,6 +79,10 @@ CPU_INT08U APP_Draw_Cross(CPU_INT08U column, CPU_INT08U row)
     {
         return 1;
     }
+
+    char debug_buffer[20];
+    snprintf(debug_buffer, 20, "Cross (%d, %d)\n\r", column, row);
+    debug_print(debug_buffer);
 
     CPU_INT16U x_draw_pos = row * x_spacing;
     CPU_INT16U y_draw_pos = column * y_spacing;

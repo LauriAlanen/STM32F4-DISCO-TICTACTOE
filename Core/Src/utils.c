@@ -77,6 +77,16 @@ void UART3_Init()
     }
 }
 
+CPU_INT08U verifyMove(CPU_INT08U **GameStateMatrix, CPU_INT08U column, CPU_INT08U row)
+{
+    if (GameStateMatrix[column][row] != NULL)
+    {
+        return 1;
+    }
+    
+    return 0;
+}
+
 void debug_print(char *msg)
 {
     #if DEBUG == 1

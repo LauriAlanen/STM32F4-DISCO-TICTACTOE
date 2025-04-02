@@ -1,5 +1,4 @@
 #include "app_lcd.h"
-#include "utils.h"
 #include <stdio.h>
 
 CPU_INT16U x_size, y_size, x_spacing, y_spacing;

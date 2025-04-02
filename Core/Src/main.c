@@ -18,6 +18,11 @@ static OS_TCB App_TaskCircleTCB;
 static CPU_STK App_TaskCircleStk[TASK_STK_SIZE];
 static void App_TaskCircle(void *p_arg);
 
+#define PRINT_TASK_PRIORITY 17
+static OS_TCB App_TaskPrintTCB;
+static CPU_STK App_TaskPrintStk[TASK_STK_SIZE];
+static void PrintGameStateTask(void *p_arg);
+
 OS_MUTEX GameStateMutex;
 static uint8_t GameStateMatrix[BOARD_SIZE][BOARD_SIZE];
 
@@ -126,6 +131,19 @@ static void App_TaskStart(void *p_arg)
                 (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                 (OS_ERR *)&os_error);
 
+    OSTaskCreate((OS_TCB *)&App_TaskPrintTCB,
+                (CPU_CHAR *)"App Task Print",
+                (OS_TASK_PTR) PrintGameStateTask,
+                (void *) 0,
+                (OS_PRIO) CROSS_TASK_PRIORITY,
+                (CPU_STK *)&App_TaskPrintStk[0],
+                (CPU_STK_SIZE)(TASK_STK_SIZE / 10u),
+                (CPU_STK_SIZE) TASK_STK_SIZE,
+                (OS_MSG_QTY) 0,
+                (OS_TICK) 0,
+                (void *) 0,
+                (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+                (OS_ERR *)&os_error);
 
     while (DEF_ON)
     {
@@ -138,11 +156,10 @@ static void App_TaskStart(void *p_arg)
 
 static void App_TaskCircle(void *p_arg)
 {
-    OS_ERR err;
+    OS_ERR error;
     TS_StateTypeDef *TS_state = NULL;
     Cell touched_cell;
-    CPU_INT08U draw_err = 0;
-    CPU_INT08U touch_err = 0;
+    CPU_INT08U game_error = 0;
 
     (void)p_arg;
 
@@ -153,50 +170,63 @@ static void App_TaskCircle(void *p_arg)
                    0,
                    OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_BLOCKING,
                    DEF_NULL,
-                   &err);
+                   &error);
 
         TS_state = (TS_StateTypeDef *)OSQPend((OS_Q *)&TSEventQ,
                                               0,
                                               OS_OPT_PEND_BLOCKING,
                                               (OS_MSG_SIZE *)sizeof(TS_StateTypeDef),
                                               DEF_NULL,
-                                              &err);
-        if (err != OS_ERR_NONE || TS_state == NULL)
+                                              &error);
+        if (error != OS_ERR_NONE || TS_state == NULL)
         {
             debug_print("TaskCircle: OSQPend error or null state!\n\r");
+            __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15);
+            HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
         }
 
-        touch_err = APP_TS_Get_Cell(TS_state, &touched_cell);
-        if (!touch_err)
+        game_error += APP_TS_Get_Cell(TS_state, &touched_cell);
+        if (!game_error)
         {
-            OSMutexPend(&GameStateMutex, 0, OS_OPT_PEND_BLOCKING, DEF_NULL, &err);
+            OSMutexPend(&GameStateMutex, 0, OS_OPT_PEND_BLOCKING, DEF_NULL, &error);
             
-            draw_err = APP_Draw_Circle(touched_cell.column, touched_cell.row);
-            GameStateMatrix[touched_cell.column][touched_cell.row] = CIRCLE;
+            game_error += APP_Draw_Circle(touched_cell.column, touched_cell.row);
 
-            OSMutexPost(&GameStateMutex, OS_OPT_POST_NONE, &err);
+            if (GameStateMatrix[touched_cell.column][touched_cell.row] ==  EMPTY)
+            {
+                GameStateMatrix[touched_cell.column][touched_cell.row] = CIRCLE;
+            }
+
+            else
+            {
+                game_error++;
+            }
+
+            OSMutexPost(&GameStateMutex, OS_OPT_POST_NONE, &error);
         }
 
-        OSMemPut(&TSMemPool, (void *)TS_state, &err);
+        OSMemPut(&TSMemPool, (void *)TS_state, &error);
         OSTimeDlyHMSM(0u, 0u, 0u, 100u,
                       OS_OPT_TIME_HMSM_STRICT,
-                      &err);
+                      &error);
 
-        if (draw_err || touch_err)
+        if (game_error)
         {
             debug_print("TaskCircle: Retrying draw!\n\r");
             OSFlagPost(&GameFlags,
                        FLAG_TURN_CIRCLES,
                        OS_OPT_POST_FLAG_SET,
-                       &err);
+                       &error);
         }
         else
         {
             OSFlagPost(&GameFlags,
                        FLAG_TURN_CROSSES,
                        OS_OPT_POST_FLAG_SET,
-                       &err);
+                       &error);
         }
+
+        game_error = 0;
 
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15);
         HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
@@ -205,11 +235,10 @@ static void App_TaskCircle(void *p_arg)
 
 static void App_TaskCross(void *p_arg)
 {
-    OS_ERR err;
+    OS_ERR error;
     TS_StateTypeDef *TS_state = NULL;
     Cell touched_cell;
-    CPU_INT08U draw_err = 0;
-    CPU_INT08U touch_err = 0;
+    CPU_INT08U game_error = 0;
 
     (void)p_arg;
 
@@ -220,52 +249,97 @@ static void App_TaskCross(void *p_arg)
                    0,
                    OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_BLOCKING,
                    DEF_NULL,
-                   &err);
+                   &error);
 
         TS_state = (TS_StateTypeDef *)OSQPend((OS_Q *)&TSEventQ,
                                               0,
                                               OS_OPT_PEND_BLOCKING,
                                               (OS_MSG_SIZE *)sizeof(TS_StateTypeDef),
                                               DEF_NULL,
-                                              &err);
-        if (err != OS_ERR_NONE || TS_state == NULL)
+                                              &error);
+        if (error != OS_ERR_NONE || TS_state == NULL)
         {
             debug_print("TaskCross: OSQPend error or null state!\n\r");
+            __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15);
+            HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
         }
 
-        touch_err = APP_TS_Get_Cell(TS_state, &touched_cell);
-        if (!touch_err)
+        game_error += APP_TS_Get_Cell(TS_state, &touched_cell);
+        if (!game_error)
         {
-            OSMutexPend(&GameStateMutex, 0, OS_OPT_PEND_BLOCKING, DEF_NULL, &err);
+            OSMutexPend(&GameStateMutex, 0, OS_OPT_PEND_BLOCKING, DEF_NULL, &error);
 
-            draw_err = APP_Draw_Cross(touched_cell.column, touched_cell.row);
-            GameStateMatrix[touched_cell.column][touched_cell.row] = CIRCLE;
+            game_error += APP_Draw_Cross(touched_cell.column, touched_cell.row);
+            
+            if (GameStateMatrix[touched_cell.column][touched_cell.row] ==  EMPTY)
+            {
+                GameStateMatrix[touched_cell.column][touched_cell.row] = CROSS;
+            }
 
-            OSMutexPost(&GameStateMutex, OS_OPT_POST_NONE, &err);
+            else
+            {
+                game_error++;
+            }
+            
+            OSMutexPost(&GameStateMutex, OS_OPT_POST_NONE, &error);
         }
 
-        OSMemPut(&TSMemPool, (void *)TS_state, &err);
+        OSMemPut(&TSMemPool, (void *)TS_state, &error);
         OSTimeDlyHMSM(0u, 0u, 0u, 100u,
                       OS_OPT_TIME_HMSM_STRICT,
-                      &err);
+                      &error);
 
-        if (draw_err || touch_err)
+        if (game_error)
         {
             debug_print("TaskCross: Retrying draw!\n\r");
             OSFlagPost(&GameFlags,
                        FLAG_TURN_CROSSES,
                        OS_OPT_POST_FLAG_SET,
-                       &err);
+                       &error);
         }
         else
         {
             OSFlagPost(&GameFlags,
                        FLAG_TURN_CIRCLES,
                        OS_OPT_POST_FLAG_SET,
-                       &err);
+                       &error);
         }
+
+        game_error = 0;
 
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15);
         HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+    }
+}
+
+void PrintGameStateTask(void *p_arg) {
+    (void)p_arg;
+    OS_ERR err;
+    char debug_buffer[100];
+
+    while (1) 
+    {
+        OSMutexPend(&GameStateMutex, 
+                    0,
+                    OS_OPT_PEND_BLOCKING, 
+                    NULL,
+                    &err);
+        if (err == OS_ERR_NONE) 
+        {
+            for (int i = 0; i < BOARD_SIZE; i++) 
+            {
+                for (int j = 0; j < BOARD_SIZE; j++) 
+                {
+                    snprintf(debug_buffer, 100, "%3d ", GameStateMatrix[i][j]);
+                    debug_print(debug_buffer);
+                }
+                debug_print("\n");
+            }
+            debug_print("\n");
+
+            OSMutexPost(&GameStateMutex, OS_OPT_POST_NONE, &err);
+        }
+
+        OSTimeDlyHMSM(0, 0, 2, 0, OS_OPT_TIME_HMSM_STRICT, &err);
     }
 }

@@ -13,6 +13,7 @@ extern OS_FLAG_GRP GameFlags;
 #define FLAG_TURN_CROSSES 0x1
 #define FLAG_TURN_CIRCLES 0x2
 
+#define EMPTY DEF_NULL
 #define CIRCLE 0x01
 #define CROSS 0x02
 

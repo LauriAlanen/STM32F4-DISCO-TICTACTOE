@@ -54,41 +54,43 @@ void APP_Draw_Board()
 
 CPU_INT08U APP_Draw_Circle(CPU_INT08U column, CPU_INT08U row)
 {
-    if (column > BOARD_SIZE || row > BOARD_SIZE)
+    if (column < BOARD_SIZE && row < BOARD_SIZE)
     {
-        return 1;
+        char debug_buffer[20];
+        snprintf(debug_buffer, 20, "Circle (%d, %d)\n\r", column, row);
+        debug_print(debug_buffer);
+        
+        CPU_INT16U radii = (x_spacing - ICON_PADDING) / 2;
+        CPU_INT16U x_draw_pos = (row * x_spacing) + x_spacing / 2;
+        CPU_INT16U y_draw_pos = (column * y_spacing) + y_spacing / 2;
+        
+        BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
+        BSP_LCD_DrawCircle(x_draw_pos, y_draw_pos, radii);
+        
+        return 0;
     }
-
-    char debug_buffer[20];
-    snprintf(debug_buffer, 20, "Circle (%d, %d)\n\r", column, row);
-    debug_print(debug_buffer);
     
-    CPU_INT16U radii = (x_spacing - ICON_PADDING) / 2;
-    CPU_INT16U x_draw_pos = (row * x_spacing) + x_spacing / 2;
-    CPU_INT16U y_draw_pos = (column * y_spacing) + y_spacing / 2;
-    
-    BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
-    BSP_LCD_DrawCircle(x_draw_pos, y_draw_pos, radii);
-
-    return 0;
+    return 1;
 }
 
 CPU_INT08U APP_Draw_Cross(CPU_INT08U column, CPU_INT08U row)
 {
-    if (column > BOARD_SIZE || row > BOARD_SIZE)
+    if (column < BOARD_SIZE && row < BOARD_SIZE)
     {
-        return 1;
+        char debug_buffer[20];
+        snprintf(debug_buffer, 20, "Cross (%d, %d)\n\r", column, row);
+        debug_print(debug_buffer);
+    
+        CPU_INT16U x_draw_pos = row * x_spacing;
+        CPU_INT16U y_draw_pos = column * y_spacing;
+    
+        BSP_LCD_DrawLine(x_draw_pos + ICON_PADDING, y_draw_pos + ICON_PADDING, x_draw_pos + x_spacing - ICON_PADDING, y_draw_pos + y_spacing - ICON_PADDING);
+        BSP_LCD_DrawLine(x_draw_pos + x_spacing - ICON_PADDING, y_draw_pos + ICON_PADDING, x_draw_pos + ICON_PADDING, y_draw_pos + y_spacing - ICON_PADDING);
+
+        return 0;
     }
-
-    char debug_buffer[20];
-    snprintf(debug_buffer, 20, "Cross (%d, %d)\n\r", column, row);
-    debug_print(debug_buffer);
-
-    CPU_INT16U x_draw_pos = row * x_spacing;
-    CPU_INT16U y_draw_pos = column * y_spacing;
-
-    BSP_LCD_DrawLine(x_draw_pos + ICON_PADDING, y_draw_pos + ICON_PADDING, x_draw_pos + x_spacing - ICON_PADDING, y_draw_pos + y_spacing - ICON_PADDING);
-    BSP_LCD_DrawLine(x_draw_pos + x_spacing - ICON_PADDING, y_draw_pos + ICON_PADDING, x_draw_pos + ICON_PADDING, y_draw_pos + y_spacing - ICON_PADDING);
+    
+    return 1;
 }
 
 void APP_Draw_Text(CPU_INT16U Line, CPU_INT08U *ptr)

@@ -136,108 +136,164 @@ static void App_TaskStart(void *p_arg)
 
 static void App_TaskCircle(void *p_arg)
 {
-    OS_ERR os_error;
-    TS_StateTypeDef* TS_state;  
+    OS_ERR err;
+    TS_StateTypeDef *TS_state = NULL;
     Cell touched_cell;
-    
-    p_arg = p_arg;
+    CPU_INT08U draw_err = 0;
+    CPU_INT08U touch_err = 0;
+
+    (void)p_arg;
 
     while (DEF_ON)
     {
         OSFlagPend(&GameFlags,
-                    FLAG_TURN_CIRCLES,
-                    0,
-                    OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_BLOCKING,
-                    DEF_NULL,
-                    &os_error);
-        
-        TS_state = (TS_StateTypeDef *)OSQPend((OS_Q *)&TSEventQ,
-                    0,
-                    OS_OPT_PEND_BLOCKING,
-                    (OS_MSG_SIZE *)sizeof(TS_StateTypeDef),
-                    DEF_NULL,                
-                    &os_error);
+                   FLAG_TURN_CIRCLES,
+                   0,
+                   OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_BLOCKING,
+                   DEF_NULL,
+                   &err);
+        if (err != OS_ERR_NONE)
+        {
+            debug_print("TaskCircle: OSFlagPend error!\n\r");
+            continue;
+        }
 
-        APP_TS_Get_Cell(TS_state, &touched_cell);
-        CPU_INT08U draw_error = APP_Draw_Circle(touched_cell.column, touched_cell.row);
-        OSMemPut(&TSMemPool, (void *)TS_state, &os_error);
+        TS_state = (TS_StateTypeDef *)OSQPend((OS_Q *)&TSEventQ,
+                                              0,
+                                              OS_OPT_PEND_BLOCKING,
+                                              (OS_MSG_SIZE *)sizeof(TS_StateTypeDef),
+                                              DEF_NULL,
+                                              &err);
+        if (err != OS_ERR_NONE || TS_state == NULL)
+        {
+            debug_print("TaskCircle: OSQPend error or null state!\n\r");
+            continue;
+        }
+
+        touch_err = APP_TS_Get_Cell(TS_state, &touched_cell);
+        if (!touch_err)
+        {
+            draw_err = APP_Draw_Circle(touched_cell.column, touched_cell.row);
+        }
+        else
+        {
+            draw_err = 1;
+        }
+
+        OSMemPut(&TSMemPool, (void *)TS_state, &err);
+        if (err != OS_ERR_NONE)
+        {
+            debug_print("TaskCircle: OSMemPut error!\n\r");
+        }
 
         OSTimeDlyHMSM(0u, 0u, 0u, 100u,
-                    OS_OPT_TIME_HMSM_STRICT,
-                    &os_error);
+                      OS_OPT_TIME_HMSM_STRICT,
+                      &err);
+        if (err != OS_ERR_NONE)
+        {
+            debug_print("TaskCircle: OSTimeDly error!\n\r");
+        }
 
-        if (draw_error)
+        if (draw_err || touch_err)
         {
             debug_print("TaskCircle: Retrying draw!\n\r");
             OSFlagPost(&GameFlags,
-                        FLAG_TURN_CIRCLES,
-                        OS_OPT_POST_FLAG_SET,
-                        &os_error);
+                       FLAG_TURN_CIRCLES,
+                       OS_OPT_POST_FLAG_SET,
+                       &err);
         }
-                                
         else
         {
             OSFlagPost(&GameFlags,
-                        FLAG_TURN_CROSSES,
-                        OS_OPT_POST_FLAG_SET,
-                        &os_error);
+                       FLAG_TURN_CROSSES,
+                       OS_OPT_POST_FLAG_SET,
+                       &err);
         }
 
-        __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15); // Clear all pending interrupts
+        __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15);
         HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
     }
 }
-    
+
 static void App_TaskCross(void *p_arg)
 {
-    OS_ERR os_error;
-    TS_StateTypeDef* TS_state;
+    OS_ERR err;
+    TS_StateTypeDef *TS_state = NULL;
     Cell touched_cell;
-    
-    p_arg = p_arg;
-    
+    CPU_INT08U draw_err = 0;
+    CPU_INT08U touch_err = 0;
+
+    (void)p_arg;
+
     while (DEF_ON)
     {
         OSFlagPend(&GameFlags,
-                    FLAG_TURN_CROSSES,
-                    0,
-                    OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_BLOCKING,
-                    DEF_NULL,
-                    &os_error);
+                   FLAG_TURN_CROSSES,
+                   0,
+                   OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_BLOCKING,
+                   DEF_NULL,
+                   &err);
+        if (err != OS_ERR_NONE)
+        {
+            debug_print("TaskCross: OSFlagPend error!\n\r");
+            continue;
+        }
 
         TS_state = (TS_StateTypeDef *)OSQPend((OS_Q *)&TSEventQ,
-                    0,
-                    OS_OPT_PEND_BLOCKING,
-                    (OS_MSG_SIZE *)sizeof(TS_StateTypeDef),
-                    DEF_NULL,                
-                    &os_error);
-        
-        APP_TS_Get_Cell(TS_state, &touched_cell);
-        CPU_INT08U draw_error = APP_Draw_Cross(touched_cell.column, touched_cell.row);
-        OSMemPut(&TSMemPool, (void *)TS_state, &os_error);
+                                              0,
+                                              OS_OPT_PEND_BLOCKING,
+                                              (OS_MSG_SIZE *)sizeof(TS_StateTypeDef),
+                                              DEF_NULL,
+                                              &err);
+        if (err != OS_ERR_NONE || TS_state == NULL)
+        {
+            debug_print("TaskCross: OSQPend error or null state!\n\r");
+            continue;
+        }
+
+        touch_err = APP_TS_Get_Cell(TS_state, &touched_cell);
+        if (!touch_err)
+        {
+            draw_err = APP_Draw_Cross(touched_cell.column, touched_cell.row);
+        }
+
+        else
+        {
+            draw_err = 1;
+        }
+
+        OSMemPut(&TSMemPool, (void *)TS_state, &err);
+        if (err != OS_ERR_NONE)
+        {
+            debug_print("TaskCross: OSMemPut error!\n\r");
+        }
 
         OSTimeDlyHMSM(0u, 0u, 0u, 100u,
-                    OS_OPT_TIME_HMSM_STRICT,
-                    &os_error);
+                      OS_OPT_TIME_HMSM_STRICT,
+                      &err);
+        if (err != OS_ERR_NONE)
+        {
+            debug_print("TaskCross: OSTimeDly error!\n\r");
+        }
 
-        if (draw_error)
+        if (draw_err || touch_err)
         {
             debug_print("TaskCross: Retrying draw!\n\r");
             OSFlagPost(&GameFlags,
-                        FLAG_TURN_CROSSES,
-                        OS_OPT_POST_FLAG_SET,
-                        &os_error);
+                       FLAG_TURN_CROSSES,
+                       OS_OPT_POST_FLAG_SET,
+                       &err);
         }
-                                
+
         else
         {
             OSFlagPost(&GameFlags,
-                        FLAG_TURN_CIRCLES,
-                        OS_OPT_POST_FLAG_SET,
-                        &os_error);
+                       FLAG_TURN_CIRCLES,
+                       OS_OPT_POST_FLAG_SET,
+                       &err);
         }
 
-        __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15); // Clear all pending interrupts
+        __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15);
         HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
     }
 }

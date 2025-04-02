@@ -39,13 +39,16 @@ void APP_TS_INT_Enable()
 
 // In TS top left corner is (0, 320)
 // This function is reentrant since global variables are only read
-void APP_TS_Get_Cell(TS_StateTypeDef* TS_state, Cell* touched_cell)
+CPU_INT08U APP_TS_Get_Cell(TS_StateTypeDef* TS_state, Cell* touched_cell)
 {  
     if (TS_state->TouchDetected && TS_state->X < x_size && TS_state->Y < y_size)
     {
         touched_cell->row = TS_state->X / x_spacing;
         touched_cell->column = (y_size - TS_state->Y) / y_spacing;
+        return 0;
     }
+
+    return 1;
 }
 
 void EXTI15_10_IRQHandler(void)
@@ -70,6 +73,11 @@ void EXTI15_10_IRQHandler(void)
         BSP_TS_GetState(TS_state); // DRIVER BUG: Read 3 times to get latest value. This is caused by tft driver buffering.
         BSP_TS_GetState(TS_state);
         
+
+        char debug_buffer[20];
+        snprintf(debug_buffer, 20, "Draw (%d, %d)\n\r", TS_state->X, TS_state->Y);
+        debug_print(debug_buffer);
+
         OSQPost(&TSEventQ,
                 (void *)TS_state,
                 sizeof(void *),

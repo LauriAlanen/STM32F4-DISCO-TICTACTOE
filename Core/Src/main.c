@@ -18,8 +18,6 @@ static OS_TCB App_TaskCircleTCB;
 static CPU_STK App_TaskCircleStk[TASK_STK_SIZE];
 static void App_TaskCircle(void *p_arg);
 
-static int MatrixPoolStorage[BOARD_SIZE][BOARD_SIZE];
-
 OS_FLAG_GRP GameFlags;
 
 int main()
@@ -163,29 +161,17 @@ static void App_TaskCircle(void *p_arg)
         debug_print("TaskCircle: Got data!\n\r");
 
         APP_TS_Get_Cell(TS_state, &touched_cell);
-        CPU_INT08U draw_error = APP_Draw_Circle(touched_cell.column, touched_cell.row);
+        APP_Draw_Circle(touched_cell.column, touched_cell.row);
         OSMemPut(&TSMemPool, (void *)TS_state, &os_error);
 
         OSTimeDlyHMSM(0u, 0u, 0u, 100u,
                     OS_OPT_TIME_HMSM_STRICT,
                     &os_error);
 
-        if (draw_error)
-        {
-            debug_print("TaskCircle: Retrying draw!\n\r");
-            OSFlagPost(&GameFlags,
-                        FLAG_TURN_CIRCLES,
-                        OS_OPT_POST_FLAG_SET,
-                        &os_error);
-        }
-                                
-        else
-        {
-            OSFlagPost(&GameFlags,
-                        FLAG_TURN_CROSSES,
-                        OS_OPT_POST_FLAG_SET,
-                        &os_error);
-        }
+        OSFlagPost(&GameFlags,
+            FLAG_TURN_CROSSES,
+            OS_OPT_POST_FLAG_SET,
+            &os_error);
 
         debug_print("TaskCircle: Interrupts enabled!\n\r");
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15); // Clear all pending interrupts
@@ -222,29 +208,17 @@ static void App_TaskCross(void *p_arg)
         debug_print("TaskCross: Got data!\n\r");
         
         APP_TS_Get_Cell(TS_state, &touched_cell);
-        CPU_INT08U draw_error = APP_Draw_Cross(touched_cell.column, touched_cell.row);
+        APP_Draw_Cross(touched_cell.column, touched_cell.row);
         OSMemPut(&TSMemPool, (void *)TS_state, &os_error);
 
         OSTimeDlyHMSM(0u, 0u, 0u, 100u,
-                    OS_OPT_TIME_HMSM_STRICT,
-                    &os_error);
+            OS_OPT_TIME_HMSM_STRICT,
+            &os_error);
 
-        if (draw_error)
-        {
-            debug_print("TaskCross: Retrying draw!\n\r");
-            OSFlagPost(&GameFlags,
-                        FLAG_TURN_CROSSES,
-                        OS_OPT_POST_FLAG_SET,
-                        &os_error);
-        }
-                                
-        else
-        {
-            OSFlagPost(&GameFlags,
-                        FLAG_TURN_CIRCLES,
-                        OS_OPT_POST_FLAG_SET,
-                        &os_error);
-        }
+        OSFlagPost(&GameFlags,
+            FLAG_TURN_CIRCLES,
+            OS_OPT_POST_FLAG_SET,
+            &os_error);
 
         debug_print("TaskCross : Interrupts enabled!\n\r");
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_15); // Clear all pending interrupts

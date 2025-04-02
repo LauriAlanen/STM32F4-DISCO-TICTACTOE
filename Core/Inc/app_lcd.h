@@ -6,8 +6,8 @@
 #include "app_ts.h"
 #include "utils.h"
 #include "os.h"
+#include "main.h"
 
-#define BOARD_SIZE 10
 #define ICON_PADDING (50 / BOARD_SIZE)
 
 extern CPU_INT16U x_size, y_size, x_spacing, y_spacing; // Screen size, and grid spacing (only read)

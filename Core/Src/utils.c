@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <string.h>
 
 UART_HandleTypeDef huart1;
 
@@ -77,20 +78,109 @@ void UART3_Init()
     }
 }
 
-CPU_INT08U verifyMove(CPU_INT08U **GameStateMatrix, CPU_INT08U column, CPU_INT08U row)
+CPU_INT08U checkGameState(CPU_INT08U GameStateMatrix[BOARD_SIZE][BOARD_SIZE])
 {
-    if (GameStateMatrix[column][row] != NULL)
+    CPU_INT08U winner = 0;
+
+    for (int i = 0; i < BOARD_SIZE; i++)
     {
-        return 1;
+        CPU_INT08U first = GameStateMatrix[i][0];
+        if (first != 0)
+        {
+            CPU_INT08U rowWin = 1;
+            for (int j = 1; j < BOARD_SIZE; j++)
+            {
+                if (GameStateMatrix[i][j] != first)
+                {
+                    rowWin = 0;
+                    break;
+                }
+            }
+            if (rowWin)
+            {
+                winner = first;
+                break;
+            }
+        }
+    }
+
+    // Check columns for a win if no winner yet
+    if (winner == 0)
+    {
+        for (int j = 0; j < BOARD_SIZE; j++)
+        {
+            CPU_INT08U first = GameStateMatrix[0][j];
+            if (first != 0)
+            {
+                CPU_INT08U colWin = 1;
+                for (int i = 1; i < BOARD_SIZE; i++)
+                {
+                    if (GameStateMatrix[i][j] != first)
+                    {
+                        colWin = 0;
+                        break;
+                    }
+                }
+                if (colWin)
+                {
+                    winner = first;
+                    break;
+                }
+            }
+        }
+    }
+
+    // Check main diagonal for a win if still no winner
+    if (winner == 0)
+    {
+        CPU_INT08U first = GameStateMatrix[0][0];
+        if (first != 0)
+        {
+            CPU_INT08U diagWin = 1;
+            for (int i = 1; i < BOARD_SIZE; i++)
+            {
+                if (GameStateMatrix[i][i] != first)
+                {
+                    diagWin = 0;
+                    break;
+                }
+            }
+            if (diagWin)
+            {
+                winner = first;
+            }
+        }
+    }
+
+    // Check anti-diagonal for a win if still no winner
+    if (winner == 0)
+    {
+        CPU_INT08U first = GameStateMatrix[0][BOARD_SIZE - 1];
+        if (first != 0)
+        {
+            CPU_INT08U antiDiagWin = 1;
+            for (int i = 1; i < BOARD_SIZE; i++)
+            {
+                if (GameStateMatrix[i][BOARD_SIZE - i - 1] != first)
+                {
+                    antiDiagWin = 0;
+                    break;
+                }
+            }
+            if (antiDiagWin)
+            {
+                winner = first;
+            }
+        }
     }
     
-    return 0;
+    return winner;
 }
 
 void debug_print(char *msg)
 {
     #if DEBUG == 1
-    HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+    HAL_UART_Transmit(&huart1, (CPU_INT08U *)msg, strlen(msg), HAL_MAX_DELAY);
     #endif
 }
 

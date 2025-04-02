@@ -73,11 +73,11 @@ void EXTI15_10_IRQHandler(void)
         BSP_TS_GetState(TS_state); // DRIVER BUG: Read 3 times to get latest value. This is caused by tft driver buffering.
         BSP_TS_GetState(TS_state);
         
-
+#if DEBUG == 1
         char debug_buffer[20];
-        snprintf(debug_buffer, 20, "Draw (%d, %d)\n\r", TS_state->X, TS_state->Y);
+        snprintf(debug_buffer, 20, "ISR (%d, %d)\n\r", TS_state->X, TS_state->Y);
         debug_print(debug_buffer);
-
+#endif
         OSQPost(&TSEventQ,
                 (void *)TS_state,
                 sizeof(void *),

@@ -167,7 +167,6 @@ static void App_TaskCircle(void *p_arg)
         if (err != OS_ERR_NONE || TS_state == NULL)
         {
             debug_print("TaskCircle: OSQPend error or null state!\n\r");
-            continue;
         }
 
         touch_err = APP_TS_Get_Cell(TS_state, &touched_cell);
@@ -248,7 +247,6 @@ static void App_TaskCross(void *p_arg)
         if (err != OS_ERR_NONE || TS_state == NULL)
         {
             debug_print("TaskCross: OSQPend error or null state!\n\r");
-            continue;
         }
 
         touch_err = APP_TS_Get_Cell(TS_state, &touched_cell);

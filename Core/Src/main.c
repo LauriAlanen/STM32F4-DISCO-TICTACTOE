@@ -18,6 +18,7 @@ static OS_TCB App_TaskCircleTCB;
 static CPU_STK App_TaskCircleStk[TASK_STK_SIZE];
 static void App_TaskCircle(void *p_arg);
 
+OS_MUTEX GameStateMutex;
 static uint8_t GameStateMatrix[BOARD_SIZE][BOARD_SIZE];
 
 OS_FLAG_GRP GameFlags;
@@ -45,6 +46,7 @@ int main()
     
     OSSemCreate(&TS_Semaphore, "Touch screen semaphore", 0, &os_error);
     OSSemCreate(&LCD_Semaphore, "LCD semaphore", 1, &os_error);
+    OSMutexCreate(&GameStateMutex, "Game State Mutex", &os_error);
 
     OSQCreate(&TSEventQ,
         "Touch Event Queue",
@@ -172,11 +174,12 @@ static void App_TaskCircle(void *p_arg)
         touch_err = APP_TS_Get_Cell(TS_state, &touched_cell);
         if (!touch_err)
         {
+            OSMutexPend(&GameStateMutex, 0, OS_OPT_PEND_BLOCKING, DEF_NULL, &err);
+            
             draw_err = APP_Draw_Circle(touched_cell.column, touched_cell.row);
-        }
-        else
-        {
-            draw_err = 1;
+            GameStateMatrix[touched_cell.column][touched_cell.row] = CIRCLE;
+
+            OSMutexPost(&GameStateMutex, OS_OPT_POST_NONE, &err);
         }
 
         OSMemPut(&TSMemPool, (void *)TS_state, &err);
@@ -252,12 +255,12 @@ static void App_TaskCross(void *p_arg)
         touch_err = APP_TS_Get_Cell(TS_state, &touched_cell);
         if (!touch_err)
         {
-            draw_err = APP_Draw_Cross(touched_cell.column, touched_cell.row);
-        }
+            OSMutexPend(&GameStateMutex, 0, OS_OPT_PEND_BLOCKING, DEF_NULL, &err);
 
-        else
-        {
-            draw_err = 1;
+            draw_err = APP_Draw_Cross(touched_cell.column, touched_cell.row);
+            GameStateMatrix[touched_cell.column][touched_cell.row] = CIRCLE;
+
+            OSMutexPost(&GameStateMutex, OS_OPT_POST_NONE, &err);
         }
 
         OSMemPut(&TSMemPool, (void *)TS_state, &err);
@@ -282,7 +285,6 @@ static void App_TaskCross(void *p_arg)
                        OS_OPT_POST_FLAG_SET,
                        &err);
         }
-
         else
         {
             OSFlagPost(&GameFlags,

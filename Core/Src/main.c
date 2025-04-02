@@ -154,11 +154,6 @@ static void App_TaskCircle(void *p_arg)
                    OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_BLOCKING,
                    DEF_NULL,
                    &err);
-        if (err != OS_ERR_NONE)
-        {
-            debug_print("TaskCircle: OSFlagPend error!\n\r");
-            continue;
-        }
 
         TS_state = (TS_StateTypeDef *)OSQPend((OS_Q *)&TSEventQ,
                                               0,
@@ -183,18 +178,9 @@ static void App_TaskCircle(void *p_arg)
         }
 
         OSMemPut(&TSMemPool, (void *)TS_state, &err);
-        if (err != OS_ERR_NONE)
-        {
-            debug_print("TaskCircle: OSMemPut error!\n\r");
-        }
-
         OSTimeDlyHMSM(0u, 0u, 0u, 100u,
                       OS_OPT_TIME_HMSM_STRICT,
                       &err);
-        if (err != OS_ERR_NONE)
-        {
-            debug_print("TaskCircle: OSTimeDly error!\n\r");
-        }
 
         if (draw_err || touch_err)
         {
@@ -235,11 +221,6 @@ static void App_TaskCross(void *p_arg)
                    OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_BLOCKING,
                    DEF_NULL,
                    &err);
-        if (err != OS_ERR_NONE)
-        {
-            debug_print("TaskCross: OSFlagPend error!\n\r");
-            continue;
-        }
 
         TS_state = (TS_StateTypeDef *)OSQPend((OS_Q *)&TSEventQ,
                                               0,
@@ -264,18 +245,9 @@ static void App_TaskCross(void *p_arg)
         }
 
         OSMemPut(&TSMemPool, (void *)TS_state, &err);
-        if (err != OS_ERR_NONE)
-        {
-            debug_print("TaskCross: OSMemPut error!\n\r");
-        }
-
         OSTimeDlyHMSM(0u, 0u, 0u, 100u,
                       OS_OPT_TIME_HMSM_STRICT,
                       &err);
-        if (err != OS_ERR_NONE)
-        {
-            debug_print("TaskCross: OSTimeDly error!\n\r");
-        }
 
         if (draw_err || touch_err)
         {

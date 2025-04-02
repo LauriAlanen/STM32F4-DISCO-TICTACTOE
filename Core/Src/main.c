@@ -18,10 +18,12 @@ static OS_TCB App_TaskCircleTCB;
 static CPU_STK App_TaskCircleStk[TASK_STK_SIZE];
 static void App_TaskCircle(void *p_arg);
 
+#if DEBUG == 1
 #define PRINT_TASK_PRIORITY 17
 static OS_TCB App_TaskPrintTCB;
 static CPU_STK App_TaskPrintStk[TASK_STK_SIZE];
 static void PrintGameStateTask(void *p_arg);
+#endif
 
 OS_MUTEX GameStateMutex;
 static uint8_t GameStateMatrix[BOARD_SIZE][BOARD_SIZE];
@@ -130,7 +132,7 @@ static void App_TaskStart(void *p_arg)
                 (void *) 0,
                 (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                 (OS_ERR *)&os_error);
-
+#if DEBUG == 1
     OSTaskCreate((OS_TCB *)&App_TaskPrintTCB,
                 (CPU_CHAR *)"App Task Print",
                 (OS_TASK_PTR) PrintGameStateTask,
@@ -144,7 +146,7 @@ static void App_TaskStart(void *p_arg)
                 (void *) 0,
                 (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                 (OS_ERR *)&os_error);
-
+#endif
     while (DEF_ON)
     {
         OSTimeDlyHMSM(0u, 0u, 0u, 500u,
@@ -189,16 +191,16 @@ static void App_TaskCircle(void *p_arg)
         if (!game_error)
         {
             OSMutexPend(&GameStateMutex, 0, OS_OPT_PEND_BLOCKING, DEF_NULL, &error);
-            
-            game_error += APP_Draw_Circle(touched_cell.column, touched_cell.row);
 
             if (GameStateMatrix[touched_cell.column][touched_cell.row] ==  EMPTY)
             {
+                game_error += APP_Draw_Circle(touched_cell.column, touched_cell.row);
                 GameStateMatrix[touched_cell.column][touched_cell.row] = CIRCLE;
             }
 
             else
             {
+                debug_print("Circle: Cell not empty! \n\r");
                 game_error++;
             }
 
@@ -269,15 +271,15 @@ static void App_TaskCross(void *p_arg)
         {
             OSMutexPend(&GameStateMutex, 0, OS_OPT_PEND_BLOCKING, DEF_NULL, &error);
 
-            game_error += APP_Draw_Cross(touched_cell.column, touched_cell.row);
-            
             if (GameStateMatrix[touched_cell.column][touched_cell.row] ==  EMPTY)
             {
+                game_error += APP_Draw_Cross(touched_cell.column, touched_cell.row);
                 GameStateMatrix[touched_cell.column][touched_cell.row] = CROSS;
             }
 
             else
             {
+                debug_print("Cross: Cell not empty! \n\r");
                 game_error++;
             }
             
@@ -312,6 +314,7 @@ static void App_TaskCross(void *p_arg)
     }
 }
 
+#if DEBUG == 1
 void PrintGameStateTask(void *p_arg) {
     (void)p_arg;
     OS_ERR err;
@@ -343,3 +346,4 @@ void PrintGameStateTask(void *p_arg) {
         OSTimeDlyHMSM(0, 0, 2, 0, OS_OPT_TIME_HMSM_STRICT, &err);
     }
 }
+#endif

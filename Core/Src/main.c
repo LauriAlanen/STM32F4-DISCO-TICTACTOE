@@ -222,7 +222,7 @@ static void ProcessTouchEvent(OS_FLAGS turnFlag, OS_FLAGS nextTurnFlag,
     /* Return the touch state buffer to the memory pool */
     OSMemPut(&TSMemPool, (void *)TS_state, &error);
 
-    OSTimeDlyHMSM(0u, 0u, 0u, 50u, OS_OPT_TIME_HMSM_STRICT, &error);
+    OSTimeDlyHMSM(0u, 0u, 0u, 200u, OS_OPT_TIME_HMSM_STRICT, &error);
 
     /* Post the flag for the next player's turn, repeat current turn if error occurred */
     OSFlagPost(&GameFlags,
@@ -271,7 +271,7 @@ void App_TaskGameStateChecker(void *p_arg)
     while (DEF_ON)
     {
         /* Delay between game state checks */
-        OSTimeDlyHMSM(0u, 0u, 0u, 50u, OS_OPT_TIME_HMSM_STRICT, &error);
+        OSTimeDlyHMSM(0u, 0u, 0u, 100u, OS_OPT_TIME_HMSM_STRICT, &error);
 
         OSMutexPend(&GameStateMutex, 0, OS_OPT_PEND_BLOCKING, DEF_NULL, &error);
         state = checkGameState(GameStateMatrix);
@@ -280,10 +280,12 @@ void App_TaskGameStateChecker(void *p_arg)
         /* Report game status */
         if (state == 1)
         {
+            APP_Draw_Text(6, (CPU_INT08U *)"Circle wins!");
             debug_print("Circle wins!\n");
         }
         else if (state == 2)
         {
+            APP_Draw_Text(6, (CPU_INT08U *)"Cross wins!");
             debug_print("Cross wins!\n");
         }
         else
@@ -292,3 +294,4 @@ void App_TaskGameStateChecker(void *p_arg)
         }
     }
 }
+ 

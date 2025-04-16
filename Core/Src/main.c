@@ -230,6 +230,12 @@ static void App_TaskCircle(void *p_arg)
         }
 
         OSMemPut(&TSMemPool, (void *)TS_state, &error);
+
+        OSFlagPost(&GameFlags,
+                   FLAG_CHECK_BOARD,
+                   OS_OPT_POST_FLAG_SET,
+                   &error);
+
         OSTimeDlyHMSM(0u, 0u, 0u, 100u, OS_OPT_TIME_HMSM_STRICT, &error);
 
         if (game_error)
@@ -243,7 +249,7 @@ static void App_TaskCircle(void *p_arg)
         else
         {
             OSFlagPost(&GameFlags,
-                       FLAG_TURN_CROSSES || FLAG_CHECK_BOARD,
+                       FLAG_TURN_CROSSES,
                        OS_OPT_POST_FLAG_SET,
                        &error);
         }
@@ -307,6 +313,12 @@ static void App_TaskCross(void *p_arg)
         }
 
         OSMemPut(&TSMemPool, (void *)TS_state, &error);
+
+        OSFlagPost(&GameFlags,
+            FLAG_CHECK_BOARD,
+            OS_OPT_POST_FLAG_SET,
+            &error);
+
         OSTimeDlyHMSM(0u, 0u, 0u, 100u, OS_OPT_TIME_HMSM_STRICT, &error);
 
         if (game_error)
@@ -320,7 +332,7 @@ static void App_TaskCross(void *p_arg)
         else
         {
             OSFlagPost(&GameFlags,
-                       FLAG_TURN_CIRCLES || FLAG_CHECK_BOARD,
+                       FLAG_TURN_CIRCLES,
                        OS_OPT_POST_FLAG_SET,
                        &error);
         }

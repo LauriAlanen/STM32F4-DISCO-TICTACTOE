@@ -71,12 +71,14 @@ Launch Ubuntu from the Start menu and follow the prompts to create your Linux us
 - Install WSL Extension to your Host VScode if not already installed. https://marketplace.visualstudio.com/items/?itemName=ms-vscode-remote.remote-wsl
 - Press Ctrl+Shift+P to open the Command Palette. Enter Connect to WSL (or press the blue WSL button on the bottom left corner of your screen).
 
+![image](https://github.com/user-attachments/assets/f85b2b31-2ac9-4d8a-a3fc-2ec6de3cdf3e)
+
 ### 3. Install dependencies to WSL
 ```bash
 sudo apt install -y cmake gcc-arm-none-eabi ninja-build stlink-tools
 ```
  
-### Steps
+## Compiling
 These instructions are meant to be used for VScode, just make sure that you are connected to WSL if not using a native Linux machine.
 1. **Clone the repository**
 
@@ -88,7 +90,7 @@ These instructions are meant to be used for VScode, just make sure that you are 
 - Link to the extension : https://marketplace.visualstudio.com/items/?itemName=ms-vscode.cmake-tools
 
 3. **Navigate to the CMake Extension**
-- Now you can buid the project. Preconfigured POST_BUILD commands defined in `CMakeLists.txt` will automatically flash the target board as long as its connected and `st-flash` is available.
+- Now you can buid the project. Preconfigured POST_BUILD commands defined in `CMakeLists.txt` will automatically flash the target board as long as its connected and `st-flash` is available from `st-tools`.
 
 4. **Play the game**
 - Now a game should start on your STM32F4-DISCO and you should be able to play it.

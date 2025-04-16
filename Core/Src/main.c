@@ -236,7 +236,7 @@ static void App_TaskCircle(void *p_arg)
                    OS_OPT_POST_FLAG_SET,
                    &error);
 
-        OSTimeDlyHMSM(0u, 0u, 0u, 100u, OS_OPT_TIME_HMSM_STRICT, &error);
+        OSTimeDlyHMSM(0u, 0u, 0u, 50u, OS_OPT_TIME_HMSM_STRICT, &error);
 
         if (game_error)
         {
@@ -319,7 +319,7 @@ static void App_TaskCross(void *p_arg)
             OS_OPT_POST_FLAG_SET,
             &error);
 
-        OSTimeDlyHMSM(0u, 0u, 0u, 100u, OS_OPT_TIME_HMSM_STRICT, &error);
+        OSTimeDlyHMSM(0u, 0u, 0u, 50u, OS_OPT_TIME_HMSM_STRICT, &error);
 
         if (game_error)
         {
